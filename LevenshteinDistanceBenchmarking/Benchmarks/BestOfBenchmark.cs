@@ -34,6 +34,13 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 		}
 
 		[Benchmark]
+		public void BestNonParallelIntrinsic()
+		{
+			new BestNonParallelIntrinsicCalculator()
+				.CalculateDistance(ComparisonStringA, ComparisonStringB);
+		}
+
+		[Benchmark]
 		public void BestParallel()
 		{
 			new BestParallelCalculator()
