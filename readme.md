@@ -15,6 +15,7 @@ Job=Core  Runtime=Core
 ## Best Of Comparison
 
 Data Structure: ArrayPoolDenseMatrix + TwoRowBitwise
+
 Misc: LocalStringLength + LocalRowData
 
 |          Method | NumberOfCharacters |             Mean |            Error |           StdDev |              Max | Ratio | RatioSD |      Gen 0 |      Gen 1 |     Gen 2 |   Allocated |
