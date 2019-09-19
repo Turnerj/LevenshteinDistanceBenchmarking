@@ -33,13 +33,26 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 				var previousRow = costMatrix.Slice(((i - 1) & 1) * columns);
 				var sourcePrevChar = source[i - 1];
 
-				for (var j = 1; j <= targetLength; ++j)
+				for (var j = 1; j <= targetLength; j += 2)
 				{
-					var insert = currentRow[j - 1] + 1;
-					var delete = previousRow[j] + 1;
-					var edit = previousRow[j - 1] + (sourcePrevChar == target[j - 1] ? 0 : 1);
+					var insert1 = currentRow[j - 1] + 1;
+					var delete1 = previousRow[j] + 1;
+					var edit1 = previousRow[j - 1] + (sourcePrevChar == target[j - 1] ? 0 : 1);
 
-					currentRow[j] = Math.Min(Math.Min(insert, delete), edit);
+					var result1 = Math.Min(Math.Min(insert1, delete1), edit1);
+					currentRow[j] = result1;
+
+					if (j == target.Length)
+					{
+						break;
+					}
+
+					var insert2 = result1 + 1;
+					var delete2 = previousRow[j + 1] + 1;
+					var edit2 = previousRow[j] + (sourcePrevChar == target[j] ? 0 : 1);
+
+					var result2 = Math.Min(Math.Min(insert2, delete2), edit2);
+					currentRow[j + 1] = result2;
 				}
 			}
 
