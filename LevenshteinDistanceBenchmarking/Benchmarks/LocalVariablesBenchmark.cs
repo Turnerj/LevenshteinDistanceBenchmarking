@@ -38,5 +38,11 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 			new LocalStringLengthCalculator()
 				.CalculateDistance(ComparisonStringA, ComparisonStringB);
 		}
+		[Benchmark]
+		public void LocalLastInsert()
+		{
+			new LocalLastInsertCalculator()
+				.CalculateDistance(ComparisonStringA, ComparisonStringB);
+		}
 	}
 }
