@@ -1,6 +1,14 @@
 # Levenshtein Distance Benchmarking
 
-## Benchmark Machine
+## Running the Benchmarks
+
+1. Make sure the application is in "Release" mode
+2. Run the application without the debugger attached
+3. After calculator validation completes (should take a few seconds), select the benchmark to run
+
+## My Benchmark Results
+
+### Benchmark Machine
 
 ```
 BenchmarkDotNet=v0.11.5, OS=Windows 10.0.18362
@@ -12,7 +20,7 @@ Intel Core i7-6700HQ CPU 2.60GHz (Skylake), 1 CPU, 8 logical and 4 physical core
 Job=Core  Runtime=Core
 ```
 
-## Best Of Comparison
+### Best Of Comparison
 
 Data Structure: ArrayPoolDenseMatrix + TwoRowBitwise
 
@@ -32,7 +40,7 @@ Misc: LocalStringLength + LocalRowData
 | BestNonParallel |               8192 | 169,836,992.9 ns | 2,017,525.790 ns | 1,788,484.062 ns | 172,574,800.0 ns |  0.37 |    0.01 |          - |          - |         - |        24 B |
 |    BestParallel |               8192 |  54,079,959.3 ns |   568,311.103 ns |   503,792.990 ns |  55,057,500.0 ns |  0.12 |    0.00 |          - |          - |         - |      2664 B |
 
-## Data Structure Benchmarks
+### Data Structure Benchmarks
 
 |               Method | NumberOfCharacters |             Mean |            Error |           StdDev |              Max | Ratio | RatioSD |      Gen 0 |      Gen 1 |     Gen 2 |   Allocated |
 |--------------------- |------------------- |-----------------:|-----------------:|-----------------:|-----------------:|------:|--------:|-----------:|-----------:|----------:|------------:|
@@ -76,7 +84,7 @@ Misc: LocalStringLength + LocalRowData
 |  TwoRowBitwiseMatrix |               8192 | 247,938,766.7 ns | 2,646,155.925 ns | 2,475,215.894 ns | 250,786,200.0 ns |  0.53 |    0.01 |          - |          - |         - |     65840 B |
 | UnmanagedDenseMatrix |               8192 | 447,434,546.7 ns | 2,911,108.495 ns | 2,723,052.693 ns | 453,134,800.0 ns |  0.96 |    0.01 |          - |          - |         - |        24 B |
 
-## Data Type Benchmarks
+### Data Type Benchmarks
 
 |      Method | NumberOfCharacters |             Mean |             Error |            StdDev |              Max | Ratio | RatioSD |      Gen 0 |      Gen 1 |     Gen 2 |   Allocated |
 |------------ |------------------- |-----------------:|------------------:|------------------:|-----------------:|------:|--------:|-----------:|-----------:|----------:|------------:|
@@ -100,7 +108,7 @@ Misc: LocalStringLength + LocalRowData
 | ShortMatrix |               8192 | 345,012,156.2 ns |  5,361,890.930 ns |  5,266,093.842 ns | 354,616,900.0 ns |  0.68 |    0.01 | 22000.0000 |  8000.0000 | 2000.0000 | 134562056 B |
 | FloatMatrix |               8192 | 826,532,231.2 ns | 16,072,886.428 ns | 15,785,723.609 ns | 858,312,200.0 ns |  1.64 |    0.04 | 46000.0000 | 24000.0000 | 4000.0000 | 268796168 B |
 
-## Local Data Benchmarks
+### Local Data Benchmarks
 
 |            Method | NumberOfCharacters |             Mean |            Error |           StdDev |              Max | Ratio | RatioSD |      Gen 0 |      Gen 1 |     Gen 2 |   Allocated |
 |------------------ |------------------- |-----------------:|-----------------:|-----------------:|-----------------:|------:|--------:|-----------:|-----------:|----------:|------------:|
@@ -124,7 +132,7 @@ Misc: LocalStringLength + LocalRowData
 |      LocalRowData |               8192 | 478,907,026.7 ns | 3,657,350.533 ns | 3,421,087.958 ns | 484,213,000.0 ns |  0.98 |    0.02 | 46000.0000 | 24000.0000 | 4000.0000 | 268796168 B |
 | LocalStringLength |               8192 | 512,152,864.3 ns | 2,301,933.395 ns | 2,040,603.996 ns | 514,543,600.0 ns |  1.05 |    0.02 | 46000.0000 | 24000.0000 | 4000.0000 | 268796168 B |
 
-## Parallel Benchmarks
+### Parallel Benchmarks
 
 |   Method | NumberOfCharacters |             Mean |            Error |           StdDev |              Max | Ratio | RatioSD |      Gen 0 |      Gen 1 |     Gen 2 |   Allocated |
 |--------- |------------------- |-----------------:|-----------------:|-----------------:|-----------------:|------:|--------:|-----------:|-----------:|----------:|------------:|
@@ -143,7 +151,7 @@ Misc: LocalStringLength + LocalRowData
 | Baseline |               8192 | 487,397,220.0 ns | 4,374,113.493 ns | 4,091,548.476 ns | 495,615,200.0 ns |  1.00 |    0.00 | 46000.0000 | 24000.0000 | 4000.0000 | 268796168 B |
 | Parallel |               8192 | 320,846,166.7 ns | 3,392,836.142 ns | 3,173,661.033 ns | 324,724,500.0 ns |  0.66 |    0.01 | 45000.0000 | 23500.0000 | 3000.0000 | 268798192 B |
 
-## Vector Benchmarks (aka. Hardware Intrinsics)
+### Vector Benchmarks (aka. Hardware Intrinsics)
 
 |                Method | NumberOfCharacters |             Mean |            Error |           StdDev |              Max | Ratio | RatioSD |      Gen 0 |      Gen 1 |     Gen 2 |   Allocated |
 |---------------------- |------------------- |-----------------:|-----------------:|-----------------:|-----------------:|------:|--------:|-----------:|-----------:|----------:|------------:|
