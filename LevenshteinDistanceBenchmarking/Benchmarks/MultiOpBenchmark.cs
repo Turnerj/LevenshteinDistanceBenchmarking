@@ -38,5 +38,11 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 			new QuadOpCalculator()
 				.CalculateDistance(ComparisonStringA, ComparisonStringB);
 		}
+		[Benchmark]
+		public void QuadOpIntrinsic()
+		{
+			new QuadOpIntrinsicCalculator()
+				.CalculateDistance(ComparisonStringA, ComparisonStringB);
+		}
 	}
 }

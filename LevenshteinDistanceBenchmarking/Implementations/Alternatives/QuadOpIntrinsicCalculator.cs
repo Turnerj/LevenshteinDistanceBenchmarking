@@ -27,14 +27,10 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 				costMatrix[0][i] = i;
 			}
 
-			//var allOnes128Vector = Vector128.Create(1);
 			var allOnes256Vector = Vector256.Create(1);
 
 			for (var i = 1; i <= source.Length; ++i)
 			{
-				//var risingValues = new Span<int>(new int[4] { 0, 1, 2, 3 });
-				//var risingVector = Vector128.Create(0, 1, 2, 3);
-
 				fixed (int* prevRowPtr = costMatrix[i - 1])
 				{
 					for (var j = 1; j <= target.Length; j += 4)
@@ -104,8 +100,6 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 
 						var result4 = Math.Min(Math.Min(insert4, delete4), edit4);
 						costMatrix[i][j + 3] = result4;
-
-						//risingVector = Sse2.Add(risingVector, allOnesVector);
 					}
 				}
 			}
