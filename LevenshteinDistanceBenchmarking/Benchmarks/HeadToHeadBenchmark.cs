@@ -20,17 +20,46 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 			InitialiseComparisonString(NumberOfCharacters);
 		}
 
+		//[Benchmark(Baseline = true)]
+		//public void Baseline()
+		//{
+		//	new BestNonParallelCalculator()
+		//		.CalculateDistance(ComparisonStringA, ComparisonStringB);
+		//}
+
+		//[Benchmark]
+		//public void Comparison()
+		//{
+		//	new BestNonParallelCalculatorComparison()
+		//		.CalculateDistance(ComparisonStringA, ComparisonStringB);
+		//}
+
+
+		//[Benchmark(Baseline = true)]
+		//public void Baseline()
+		//{
+		//	new BestNonParallelIntrinsicCalculator()
+		//		.CalculateDistance(ComparisonStringA, ComparisonStringB);
+		//}
+
+		//[Benchmark]
+		//public void Comparison()
+		//{
+		//	new BestNonParallelIntrinsicCalculatorComparison()
+		//		.CalculateDistance(ComparisonStringA, ComparisonStringB);
+		//}
+
 		[Benchmark(Baseline = true)]
 		public void Baseline()
 		{
-			new BestNonParallelCalculator()
+			new BestParallelCalculator()
 				.CalculateDistance(ComparisonStringA, ComparisonStringB);
 		}
 
 		[Benchmark]
-		public void BestWithSingleRow()
+		public void Comparison()
 		{
-			new BestNonParallelCalculatorComparison()
+			new BestParallelCalculatorComparison()
 				.CalculateDistance(ComparisonStringA, ComparisonStringB);
 		}
 	}
