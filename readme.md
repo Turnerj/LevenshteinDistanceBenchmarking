@@ -22,26 +22,41 @@ Job=Core  Runtime=Core
 
 ### Best Of Comparison
 
-Data Structure: ArrayPoolDenseMatrix + TwoRowBitwise
+#### BestNonParallel
+
+Data Structure: ArrayPool-based Single Row
+
+Misc: LocalStringLength + "LocalRowData" (from Single Row implementation) + DoubleOp
+
+#### BestNonParallelIntrinsic
+
+Data Structure: ArrayPool Dense Matrix-based Two Row (Bitwise switching)
+
+Misc: LocalStringLength + LocalRowData + DoubleOp + Intrinsic Calls
+
+#### BestParallel
+
+Data Structure: ArrayPool Dense Matrix-based Two Row (Bitwise switching)
 
 Misc: LocalStringLength + LocalRowData + DoubleOp
 
+
 |                   Method | NumberOfCharacters |             Mean |            Error |           StdDev |              Max | Ratio | RatioSD |      Gen 0 |      Gen 1 |     Gen 2 |   Allocated |
 |------------------------- |------------------- |-----------------:|-----------------:|-----------------:|-----------------:|------:|--------:|-----------:|-----------:|----------:|------------:|
-|                 Baseline |                  8 |         548.4 ns |         4.368 ns |         4.086 ns |         556.1 ns |  1.00 |    0.00 |     0.2775 |          - |         - |       872 B |
-|          BestNonParallel |                  8 |         248.7 ns |         4.919 ns |         8.870 ns |         257.9 ns |  0.44 |    0.02 |     0.0076 |          - |         - |        24 B |
-| BestNonParallelIntrinsic |                  8 |         301.4 ns |         5.192 ns |         4.856 ns |         308.2 ns |  0.55 |    0.01 |     0.0076 |          - |         - |        24 B |
-|             BestParallel |                  8 |       7,362.1 ns |        67.784 ns |        60.088 ns |       7,450.9 ns | 13.41 |    0.14 |     0.5646 |          - |         - |      1768 B |
+|                 Baseline |                  8 |         498.5 ns |         9.299 ns |         7.765 ns |         513.8 ns |  1.00 |    0.00 |     0.2775 |          - |         - |       872 B |
+|          BestNonParallel |                  8 |         189.5 ns |         2.947 ns |         2.756 ns |         194.8 ns |  0.38 |    0.01 |     0.0076 |          - |         - |        24 B |
+| BestNonParallelIntrinsic |                  8 |         403.1 ns |         5.360 ns |         5.013 ns |         407.7 ns |  0.81 |    0.02 |     0.0076 |          - |         - |        24 B |
+|             BestParallel |                  8 |       7,073.2 ns |       128.682 ns |       120.369 ns |       7,312.6 ns | 14.17 |    0.31 |     0.5646 |          - |         - |      1768 B |
 |                          |                    |                  |                  |                  |                  |       |         |            |            |           |             |
-|                 Baseline |                512 |   1,161,608.1 ns |    10,466.886 ns |     9,278.622 ns |   1,178,100.6 ns |  1.00 |    0.00 |   185.5469 |    91.7969 |         - |   1071368 B |
-|          BestNonParallel |                512 |     645,160.0 ns |     2,405.279 ns |     2,132.217 ns |     649,000.9 ns |  0.56 |    0.00 |          - |          - |         - |        24 B |
-| BestNonParallelIntrinsic |                512 |     919,394.9 ns |    16,941.378 ns |    15,018.091 ns |     934,993.2 ns |  0.79 |    0.02 |          - |          - |         - |        24 B |
-|             BestParallel |                512 |     517,729.9 ns |    10,253.305 ns |    24,566.263 ns |     573,708.4 ns |  0.44 |    0.02 |     0.9766 |          - |         - |      2664 B |
+|                 Baseline |                512 |   1,080,464.0 ns |    11,350.444 ns |    10,617.212 ns |   1,094,187.7 ns |  1.00 |    0.00 |   183.5938 |    91.7969 |         - |   1071368 B |
+|          BestNonParallel |                512 |     563,282.9 ns |     2,340.165 ns |     2,074.495 ns |     568,003.4 ns |  0.52 |    0.01 |          - |          - |         - |        24 B |
+| BestNonParallelIntrinsic |                512 |     811,851.5 ns |    11,801.371 ns |    11,039.010 ns |     833,033.3 ns |  0.75 |    0.01 |          - |          - |         - |        24 B |
+|             BestParallel |                512 |     488,117.3 ns |     9,048.022 ns |    12,078.850 ns |     516,363.4 ns |  0.46 |    0.01 |     0.9766 |          - |         - |      2664 B |
 |                          |                    |                  |                  |                  |                  |       |         |            |            |           |             |
-|                 Baseline |               8192 | 511,733,160.0 ns | 8,694,176.731 ns | 8,132,538.309 ns | 524,658,300.0 ns |  1.00 |    0.00 | 46000.0000 | 24000.0000 | 4000.0000 | 268796168 B |
-|          BestNonParallel |               8192 | 166,861,290.4 ns | 1,196,369.308 ns |   999,022.556 ns | 168,889,250.0 ns |  0.33 |    0.00 |          - |          - |         - |        24 B |
-| BestNonParallelIntrinsic |               8192 | 235,034,984.4 ns | 2,275,792.903 ns | 2,128,778.093 ns | 239,067,433.3 ns |  0.46 |    0.01 |          - |          - |         - |        24 B |
-|             BestParallel |               8192 |  47,983,033.8 ns |   360,273.762 ns |   319,373.306 ns |  48,352,618.2 ns |  0.09 |    0.00 |          - |          - |         - |      2676 B |
+|                 Baseline |               8192 | 479,412,840.0 ns | 5,762,522.948 ns | 5,390,267.541 ns | 490,917,500.0 ns |  1.00 |    0.00 | 46000.0000 | 24000.0000 | 4000.0000 | 268796168 B |
+|          BestNonParallel |               8192 | 138,509,316.1 ns | 2,569,317.746 ns | 2,277,633.259 ns | 140,952,200.0 ns |  0.29 |    0.01 |          - |          - |         - |        24 B |
+| BestNonParallelIntrinsic |               8192 | 220,060,446.7 ns | 3,653,638.586 ns | 3,417,615.800 ns | 223,147,533.3 ns |  0.46 |    0.01 |          - |          - |         - |        24 B |
+|             BestParallel |               8192 |  48,336,431.8 ns |   466,560.933 ns |   413,594.115 ns |  49,050,009.1 ns |  0.10 |    0.00 |          - |          - |         - |      2664 B |
 
 ### Data Structure Benchmarks
 

@@ -15,49 +15,47 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 			var columns = targetLength + 1;
 
 			var arrayPool = ArrayPool<int>.Shared;
-			var rentedPool = arrayPool.Rent(2 * columns);
-			var costMatrix = new Span<int>(rentedPool);
+			var previousRow = arrayPool.Rent(columns);
 
 			for (var i = 1; i <= targetLength; ++i)
 			{
-				costMatrix[i] = i;
+				previousRow[i] = i;
 			}
 
-			costMatrix[0] = 0;
+			previousRow[0] = 0;
 
 			for (var i = 1; i <= sourceLength; ++i)
 			{
-				var currentRow = costMatrix.Slice((i & 1) * columns);
-				currentRow[0] = i;
+				var previousDiagonal = previousRow[0];
+				var previousColumn = previousRow[0]++;
 
-				var previousRow = costMatrix.Slice(((i - 1) & 1) * columns);
 				var sourcePrevChar = source[i - 1];
 
 				for (var j = 1; j <= targetLength; j += 2)
 				{
-					var insert1 = currentRow[j - 1] + 1;
-					var delete1 = previousRow[j] + 1;
-					var edit1 = previousRow[j - 1] + (sourcePrevChar == target[j - 1] ? 0 : 1);
+					var insertOrDelete1 = Math.Min(previousColumn, previousRow[j]) + 1;
+					var edit1 = previousDiagonal + (sourcePrevChar == target[j - 1] ? 0 : 1);
 
-					var result1 = Math.Min(Math.Min(insert1, delete1), edit1);
-					currentRow[j] = result1;
+					previousColumn = Math.Min(insertOrDelete1, edit1);
+					previousDiagonal = previousRow[j];
+					previousRow[j] = previousColumn;
 
 					if (j == target.Length)
 					{
 						break;
 					}
 
-					var insert2 = result1 + 1;
-					var delete2 = previousRow[j + 1] + 1;
-					var edit2 = previousRow[j] + (sourcePrevChar == target[j] ? 0 : 1);
+					var insertOrDelete2 = Math.Min(previousColumn, previousRow[j + 1]) + 1;
+					var edit2 = previousDiagonal + (sourcePrevChar == target[j] ? 0 : 1);
 
-					var result2 = Math.Min(Math.Min(insert2, delete2), edit2);
-					currentRow[j + 1] = result2;
+					previousColumn = Math.Min(insertOrDelete2, edit2);
+					previousDiagonal = previousRow[j + 1];
+					previousRow[j + 1] = previousColumn;
 				}
 			}
 
-			var result = costMatrix[(sourceLength & 1) * columns + targetLength];
-			arrayPool.Return(rentedPool);
+			var result = previousRow[targetLength];
+			arrayPool.Return(previousRow);
 			return result;
 		}
 	}
