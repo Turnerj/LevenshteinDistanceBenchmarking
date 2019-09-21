@@ -62,5 +62,11 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 			new UnmanagedDenseMatrixCalculator()
 				.CalculateDistance(ComparisonStringA, ComparisonStringB);
 		}
+		[Benchmark]
+		public void SingleRow()
+		{
+			new SingleRowCalculator()
+				.CalculateDistance(ComparisonStringA, ComparisonStringB);
+		}
 	}
 }
