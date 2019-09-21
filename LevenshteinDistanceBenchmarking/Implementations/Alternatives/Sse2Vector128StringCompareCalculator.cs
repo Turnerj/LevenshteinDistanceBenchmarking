@@ -28,13 +28,10 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 				costMatrix[0][i] = i;
 			}
 
-			var sourceSpan = source.AsSpan();
-			var targetSpan = target.AsSpan();
-
 			var arrayPool = ArrayPool<ushort>.Shared;
 			var rowComparison = arrayPool.Rent(target.Length);
 
-			for (var i = 1; i <= sourceSpan.Length; ++i)
+			for (var i = 1; i <= source.Length; ++i)
 			{
 				fixed (ushort* rowComparisonPtr = rowComparison)
 				fixed (char* targetPtr = target)
@@ -58,7 +55,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 					}
 				}
 
-				for (var j = 1; j <= targetSpan.Length; ++j)
+				for (var j = 1; j <= target.Length; ++j)
 				{
 					var insert = costMatrix[i][j - 1] + 1;
 					var delete = costMatrix[i - 1][j] + 1;
@@ -70,7 +67,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 
 			arrayPool.Return(rowComparison);
 
-			return costMatrix[sourceSpan.Length][targetSpan.Length];
+			return costMatrix[source.Length][target.Length];
 		}
 	}
 }
