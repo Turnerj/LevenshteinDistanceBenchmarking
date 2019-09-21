@@ -15,12 +15,8 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 			var sourceLength = source.Length;
 			var targetLength = target.Length;
 			var columns = targetLength + 1;
-			
-			//Align to nearest Vector256
-			columns += Vector256<int>.Count - (columns & (Vector256<int>.Count - 1));
 
-			var arrayPool = ArrayPool<int>.Shared;
-			var rentedPool = arrayPool.Rent(2 * columns);
+			var rentedPool = ArrayPool<int>.Shared.Rent(2 * columns);
 			var costMatrix = new Span<int>(rentedPool);
 
 			for (var i = 1; i <= targetLength; ++i)
@@ -31,6 +27,8 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 			costMatrix[0] = 0;
 			var allOnesVectors = Vector256.Create(1);
 
+			var rowComparison = ArrayPool<ushort>.Shared.Rent(target.Length);
+
 			for (var i = 1; i <= sourceLength; ++i)
 			{
 				var currentRow = costMatrix.Slice((i & 1) * columns);
@@ -39,34 +37,50 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 				var previousRow = costMatrix.Slice(((i - 1) & 1) * columns);
 
 				fixed (int* prevRowPtr = previousRow)
+				fixed (ushort* rowComparisonPtr = rowComparison)
+				fixed (char* targetPtr = target)
 				{
-					for (int columnIndex = 0, l = target.Length + 1; columnIndex <= l; columnIndex += Vector256<int>.Count)
-					{
-						var columnsCovered = Avx.LoadVector256(prevRowPtr + columnIndex);
-						var addedColumns = Avx2.Add(columnsCovered, allOnesVectors);
-						Avx.Store(prevRowPtr + columnIndex, addedColumns);
-					}
-				}
+					var ushortTargetPtr = (ushort*)targetPtr;
 
-				var sourcePrevChar = source[i - 1];
+					var sourceChar = (ushort)source[i - 1];
+					var sourceCharVector = Vector128.Create(sourceChar);
+
+					var targetIndex = 0;
+
+					for (; targetIndex + Vector128<ushort>.Count < target.Length; targetIndex += Vector128<ushort>.Count)
+					{
+						var targetVector = Sse2.LoadVector128(ushortTargetPtr + targetIndex);
+						var vectorCompare = Sse2.CompareEqual(sourceCharVector, targetVector);
+						Sse2.Store(rowComparisonPtr + targetIndex, vectorCompare);
+
+						//Vector256<int>.Count == Vector128<ushort>.Count: This is why this can be in the same loop
+						var columnsCovered = Avx.LoadVector256(prevRowPtr + targetIndex);
+						var addedColumns = Avx2.Add(columnsCovered, allOnesVectors);
+						Avx.Store(prevRowPtr + targetIndex, addedColumns);
+					}
+
+					for (; targetIndex < target.Length; targetIndex++)
+					{
+						rowComparison[targetIndex] = sourceChar == target[targetIndex] ? ushort.MaxValue : ushort.MinValue;
+						previousRow[targetIndex]++;
+					}
+
+					previousRow[targetIndex + 1]++;
+				}
 
 				for (var j = 1; j <= targetLength; ++j)
 				{
 					var insert = currentRow[j - 1] + 1;
 					var delete = previousRow[j];
-					var edit = previousRow[j - 1];
-
-					if (sourcePrevChar == target[j - 1])
-					{
-						edit--;
-					}
+					var edit = previousRow[j - 1] - (rowComparison[j - 1] & 1);
 
 					currentRow[j] = Math.Min(Math.Min(insert, delete), edit);
 				}
 			}
 
 			var result = costMatrix[(sourceLength & 1) * columns + targetLength];
-			arrayPool.Return(rentedPool);
+			ArrayPool<int>.Shared.Return(rentedPool);
+			ArrayPool<ushort>.Shared.Return(rowComparison);
 			return result;
 		}
 	}
