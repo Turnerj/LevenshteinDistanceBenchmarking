@@ -10,26 +10,25 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 
 		protected string ComparisonStringB;
 
-		protected void InitialiseComparisonString(int numberOfCharacters)
+		protected void InitialiseDefaultComparisonString(int numberOfCharacters)
 		{
-			var baseStringA = "aabbccddee";
-			var baseStringB = "abcdeabcde";
-			var builderA = new StringBuilder(numberOfCharacters);
-			var builderB = new StringBuilder(numberOfCharacters);
+			ComparisonStringA = BuildString("aabbccddee", numberOfCharacters);
+			ComparisonStringB = BuildString("abcdeabcde", numberOfCharacters);
+		}
 
-			var charBlocks = (int)Math.Floor((double)numberOfCharacters / 10);
+		protected string BuildString(string baseString, int numberOfCharacters)
+		{
+			var builder = new StringBuilder(numberOfCharacters);
+			var charBlocks = (int)Math.Floor((double)numberOfCharacters / baseString.Length);
 			for (int i = 0, l = charBlocks; i < l; i++)
 			{
-				builderA.Append(baseStringA);
-				builderB.Append(baseStringB);
+				builder.Append(baseString);
 			}
 
-			var remainder = (int)((double)numberOfCharacters / 10 % 1 * 10);
-			builderA.Append(baseStringA.Substring(0, remainder));
-			builderB.Append(baseStringB.Substring(0, remainder));
+			var remainder = (int)((double)numberOfCharacters / baseString.Length % 1 * baseString.Length);
+			builder.Append(baseString.Substring(0, remainder));
 
-			ComparisonStringA = builderA.ToString();
-			ComparisonStringB = builderB.ToString();
+			return builder.ToString();
 		}
 	}
 }

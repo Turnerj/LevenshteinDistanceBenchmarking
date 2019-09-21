@@ -16,7 +16,7 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 		[GlobalSetup]
 		public void Setup()
 		{
-			InitialiseComparisonString(NumberOfCharacters);
+			InitialiseDefaultComparisonString(NumberOfCharacters);
 		}
 
 		[Benchmark(Baseline = true)]
