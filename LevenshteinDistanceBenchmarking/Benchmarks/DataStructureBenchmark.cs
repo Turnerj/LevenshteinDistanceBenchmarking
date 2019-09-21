@@ -10,7 +10,7 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 	[CoreJob, MemoryDiagnoser, MaxColumn]
 	public class DataStructureBenchmark : TextBenchmarkBase
 	{
-		[Params(8, 128, 512, 2048, 8192)]
+		[Params(8, 512, 8192)]
 		public int NumberOfCharacters;
 
 		[GlobalSetup]
