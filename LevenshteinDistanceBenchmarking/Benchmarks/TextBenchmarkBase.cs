@@ -16,7 +16,7 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 			ComparisonStringB = BuildString("abcdeabcde", numberOfCharacters);
 		}
 
-		protected string BuildString(string baseString, int numberOfCharacters)
+		protected static string BuildString(string baseString, int numberOfCharacters)
 		{
 			var builder = new StringBuilder(numberOfCharacters);
 			var charBlocks = (int)Math.Floor((double)numberOfCharacters / baseString.Length);
