@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Comparisons
 {
-	class BestParallelCalculatorComparison : ILevenshteinDistanceCalculator
+	class BestParallelCalculatorComparison : ILevenshteinDistanceMemoryCalculator
 	{
 		private class TaskData
 		{
@@ -17,7 +17,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Comparisons
 			public AutoResetEvent Event;
 		}
 
-		public int CalculateDistance(string source, string target)
+		public int CalculateDistance(ReadOnlyMemory<char> source, ReadOnlyMemory<char> target)
 		{
 			var sourceLength = source.Length;
 			var targetLength = target.Length;
@@ -59,6 +59,8 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Comparisons
 
 			Parallel.For(0, degreeOfParallelism, parallelIndex =>
 			{
+				var localSource = source.Span;
+				var localTarget = target.Span;
 				var localCostMatrix = new Span<int>(rentedPool);
 
 				var columnStartIndex = columnsPerParallel * parallelIndex + 1;
@@ -107,14 +109,14 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Comparisons
 					}
 
 					var previousRow = localCostMatrix.Slice(((i - 1) & 1) * columns);
-					var sourcePrevChar = source[i - 1];
+					var sourcePrevChar = localSource[i - 1];
 					var columnTravel = 0;
 
 					for (var j = columnStartIndex; j <= targetLength && columnTravel < columnsPerParallel; j += 2, columnTravel += 2)
 					{
 						var insert1 = currentRow[j - 1] + 1;
 						var delete1 = previousRow[j] + 1;
-						var edit1 = previousRow[j - 1] + (sourcePrevChar == target[j - 1] ? 0 : 1);
+						var edit1 = previousRow[j - 1] + (sourcePrevChar == localTarget[j - 1] ? 0 : 1);
 
 						var result1 = Math.Min(Math.Min(insert1, delete1), edit1);
 						currentRow[j] = result1;
@@ -131,7 +133,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Comparisons
 
 						var insert2 = result1 + 1;
 						var delete2 = previousRow[j + 1] + 1;
-						var edit2 = previousRow[j] + (sourcePrevChar == target[j] ? 0 : 1);
+						var edit2 = previousRow[j] + (sourcePrevChar == localTarget[j] ? 0 : 1);
 
 						var result2 = Math.Min(Math.Min(insert2, delete2), edit2);
 						currentRow[j + 1] = result2;

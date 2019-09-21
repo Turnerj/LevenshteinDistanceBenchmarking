@@ -7,9 +7,9 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 {
-	class UnmanagedDenseMatrixCalculator : ILevenshteinDistanceCalculator
+	class UnmanagedDenseMatrixCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public unsafe int CalculateDistance(string source, string target)
+		public unsafe int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
 			var rows = source.Length + 1;
 			var columns = target.Length + 1;

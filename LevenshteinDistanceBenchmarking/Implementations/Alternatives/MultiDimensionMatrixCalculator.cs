@@ -5,9 +5,9 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 {
-	class MultiDimensionMatrixCalculator : ILevenshteinDistanceCalculator
+	class MultiDimensionMatrixCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public int CalculateDistance(string source, string target)
+		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
 			var costMatrix = new int[source.Length + 1, target.Length + 1];
 

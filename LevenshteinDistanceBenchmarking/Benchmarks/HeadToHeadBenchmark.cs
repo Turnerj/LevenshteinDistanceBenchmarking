@@ -53,14 +53,14 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 		public void Baseline()
 		{
 			new BestParallelCalculator()
-				.CalculateDistance(ComparisonStringA, ComparisonStringB);
+				.CalculateDistance(ComparisonStringA.AsMemory(), ComparisonStringB.AsMemory());
 		}
 
 		[Benchmark]
 		public void Comparison()
 		{
 			new BestParallelCalculatorComparison()
-				.CalculateDistance(ComparisonStringA, ComparisonStringB);
+				.CalculateDistance(ComparisonStringA.AsMemory(), ComparisonStringB.AsMemory());
 		}
 	}
 }

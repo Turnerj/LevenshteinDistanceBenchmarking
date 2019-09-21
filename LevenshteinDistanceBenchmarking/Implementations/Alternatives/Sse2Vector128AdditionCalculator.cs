@@ -8,9 +8,9 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 {
-	class Sse2Vector128AdditionCalculator : ILevenshteinDistanceCalculator
+	class Sse2Vector128AdditionCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public unsafe int CalculateDistance(string source, string target)
+		public unsafe int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
 			var columns = target.Length + 1;
 			columns += Vector128<int>.Count - (columns & (Vector128<int>.Count - 1));

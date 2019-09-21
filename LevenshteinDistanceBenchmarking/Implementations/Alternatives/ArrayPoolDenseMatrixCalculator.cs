@@ -6,9 +6,9 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 {
-	class ArrayPoolDenseMatrixCalculator : ILevenshteinDistanceCalculator
+	class ArrayPoolDenseMatrixCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public int CalculateDistance(string source, string target)
+		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
 			var rows = source.Length + 1;
 			var columns = target.Length + 1;

@@ -11,7 +11,9 @@ namespace LevenshteinDistanceBenchmarking
 {
 	class ImplementationValidator
 	{
-		private ILevenshteinDistanceCalculator[] Implementations;
+		private readonly ILevenshteinDistanceCalculator[] Implementations;
+
+		private List<Tuple<string, string>> ValidationData;
 
 		public ImplementationValidator()
 		{
@@ -27,11 +29,15 @@ namespace LevenshteinDistanceBenchmarking
 			Implementations = engineTypes.Select(t => Activator.CreateInstance(t) as ILevenshteinDistanceCalculator).ToArray();
 		}
 
-
 		public void Validate()
 		{
 			Console.ForegroundColor = ConsoleColor.Cyan;
-			Console.WriteLine("Validating calculators...");
+			Console.WriteLine("Levenshtein Distance Calculator Validation");
+
+			Console.ForegroundColor = ConsoleColor.DarkCyan;
+			Console.Write("Initialising Test Data... ");
+			InitialiseTestData();
+			Console.WriteLine("Done!");
 			Console.ResetColor();
 
 			var baseline = new LevenshteinDistanceBaseline();
@@ -71,29 +77,34 @@ namespace LevenshteinDistanceBenchmarking
 			Console.WriteLine();
 		}
 
-		private int[] GetTestResults(ILevenshteinDistanceCalculator calculator)
+		private void InitialiseTestData()
 		{
-			var results = new List<int>();
+			ValidationData = new List<Tuple<string, string>>();
 
-			var testA1 = "Hello World!";
-			var testA2 = "HeLLo Wolrd!";
-			results.Add(calculator.CalculateDistance(testA1, testA2));
+			ValidationData.Add(new Tuple<string, string>(
+				"Hello World!",
+				"HeLLo Wolrd!"
+			));
 
-			var testE1 = "Nulla enim.";
-			var testE2 = "Nulla - Hello - enim.";
-			results.Add(calculator.CalculateDistance(testE1, testE2));
+			ValidationData.Add(new Tuple<string, string>(
+				"Nulla enim.",
+				"Nulla - Hello - enim."
+			));
 
-			var testB1 = "Nulla nec ipsum sit amet enim malesuada dapibus vel quis mi.";
-			var testB2 = "Nulla nec ipsum sit amet - Hello - enim malesuada dapibus vel quis mi.";
-			results.Add(calculator.CalculateDistance(testB1, testB2));
+			ValidationData.Add(new Tuple<string, string>(
+				"Nulla nec ipsum sit amet enim malesuada dapibus vel quis mi.",
+				"Nulla nec ipsum sit amet - Hello - enim malesuada dapibus vel quis mi."
+			));
 
-			var testC1 = "Nulla nec ipsum sit amet enim malesuada dapibus vel quis mi. Proin lacinia arcu non blandit mattis.";
-			var testC2 = "Nulla nec ipsum sit amet enim malesuada dapibus vel quis mi. Proin lacinia arcu non blandit mattis.";
-			results.Add(calculator.CalculateDistance(testC1, testC2));
+			ValidationData.Add(new Tuple<string, string>(
+				"Nulla nec ipsum sit amet enim malesuada dapibus vel quis mi. Proin lacinia arcu non blandit mattis.",
+				"Nulla nec ipsum sit amet enim malesuada dapibus vel quis mi. Proin lacinia arcu non blandit mattis."
+			));
 
-			var testD1 = "Hello World!";
-			var testD2 = "";
-			results.Add(calculator.CalculateDistance(testD1, testD2));
+			ValidationData.Add(new Tuple<string, string>(
+				"Hello World!",
+				""
+			));
 
 			//Extra long string checks
 			var baseString = "abcdefghij";
@@ -107,7 +118,43 @@ namespace LevenshteinDistanceBenchmarking
 				}
 
 				var comparisonString = builder.ToString();
-				results.Add(calculator.CalculateDistance(comparisonString, comparisonString));
+				ValidationData.Add(new Tuple<string, string>(
+					comparisonString,
+					comparisonString
+				));
+			}
+		}
+
+		private int[] GetTestResults(ILevenshteinDistanceCalculator calculator)
+		{
+			var results = new List<int>();
+
+			for (var i = 0; i < ValidationData.Count; i++)
+			{
+				var testPair = ValidationData[i];
+				var tmpResult = -1;
+				if (calculator is ILevenshteinDistanceSpanCalculator spanCalculator)
+				{
+					tmpResult = spanCalculator.CalculateDistance(
+						testPair.Item1,
+						testPair.Item2
+					);
+				}
+				else if (calculator is ILevenshteinDistanceMemoryCalculator memoryCalculator)
+				{
+					tmpResult = memoryCalculator.CalculateDistance(
+						testPair.Item1.AsMemory(),
+						testPair.Item2.AsMemory()
+					);
+				}
+				else
+				{
+					throw new InvalidOperationException(
+						$"Invalid type of calculator! Must implement {nameof(ILevenshteinDistanceSpanCalculator)} or {nameof(ILevenshteinDistanceMemoryCalculator)}"
+					);
+				}
+
+				results.Add(tmpResult);
 			}
 
 			return results.ToArray();

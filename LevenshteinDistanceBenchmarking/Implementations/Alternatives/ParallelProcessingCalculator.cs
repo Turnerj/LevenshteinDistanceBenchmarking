@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 {
-	class ParallelProcessingCalculator : ILevenshteinDistanceCalculator
+	class ParallelProcessingCalculator : ILevenshteinDistanceMemoryCalculator
 	{
-		public int CalculateDistance(string source, string target)
+		public int CalculateDistance(ReadOnlyMemory<char> source, ReadOnlyMemory<char> target)
 		{
 			var costMatrix = Enumerable
 			  .Range(0, source.Length + 1)
@@ -40,6 +40,8 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 
 			Parallel.For(0, degreeOfParallelism, parallelIndex =>
 			{
+				var localSource = source.Span;
+				var localTarget = target.Span;
 				var columnStartIndex = columnsPerParallel * parallelIndex + 1;
 
 				for (var i = 1; i <= source.Length; ++i)
@@ -51,7 +53,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 					{
 						var insert = costMatrix[i][j - 1] + 1;
 						var delete = costMatrix[i - 1][j] + 1;
-						var edit = costMatrix[i - 1][j - 1] + (source[i - 1] == target[j - 1] ? 0 : 1);
+						var edit = costMatrix[i - 1][j - 1] + (localSource[i - 1] == localTarget[j - 1] ? 0 : 1);
 
 						costMatrix[i][j] = Math.Min(Math.Min(insert, delete), edit);
 					}

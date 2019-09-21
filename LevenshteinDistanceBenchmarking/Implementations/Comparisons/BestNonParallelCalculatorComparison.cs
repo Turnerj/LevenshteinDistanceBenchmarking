@@ -6,9 +6,9 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Comparisons
 {
-	class BestNonParallelCalculatorComparison : ILevenshteinDistanceCalculator
+	class BestNonParallelCalculatorComparison : ILevenshteinDistanceSpanCalculator
 	{
-		public int CalculateDistance(string source, string target)
+		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
 			var sourceLength = source.Length;
 			var targetLength = target.Length;

@@ -5,9 +5,9 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 {
-	class LocalStringLengthCalculator : ILevenshteinDistanceCalculator
+	class LocalStringLengthCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public int CalculateDistance(string source, string target)
+		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
 			var sourceLength = source.Length;
 			var targetLength = target.Length;

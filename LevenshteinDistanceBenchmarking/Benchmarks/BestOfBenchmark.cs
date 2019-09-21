@@ -44,7 +44,7 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 		public void BestParallel()
 		{
 			new BestParallelCalculator()
-				.CalculateDistance(ComparisonStringA, ComparisonStringB);
+				.CalculateDistance(ComparisonStringA.AsMemory(), ComparisonStringB.AsMemory());
 		}
 	}
 }

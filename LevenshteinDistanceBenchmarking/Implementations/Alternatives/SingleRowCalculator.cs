@@ -9,9 +9,9 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 	/// Inspired by "Iosifovich" by Frederik Hertzum
 	/// https://bitbucket.org/clearer/iosifovich/src/master/
 	/// </summary>
-	class SingleRowCalculator : ILevenshteinDistanceCalculator
+	class SingleRowCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public int CalculateDistance(string source, string target)
+		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
 			var previousRow = new int[target.Length + 1];
 

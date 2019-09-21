@@ -9,13 +9,14 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 {
-	class Sse2Vector128StringCompareCalculator : ILevenshteinDistanceCalculator
+	class Sse2Vector128StringCompareCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public unsafe int CalculateDistance(string source, string target)
+		public unsafe int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
+			var targetLength = target.Length;
 			var costMatrix = Enumerable
 			  .Range(0, source.Length + 1)
-			  .Select(line => new int[target.Length + 1])
+			  .Select(line => new int[targetLength + 1])
 			  .ToArray();
 
 			for (var i = 1; i <= source.Length; ++i)

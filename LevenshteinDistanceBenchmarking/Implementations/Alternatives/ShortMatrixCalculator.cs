@@ -5,13 +5,14 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 {
-	class ShortMatrixCalculator : ILevenshteinDistanceCalculator
+	class ShortMatrixCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public int CalculateDistance(string source, string target)
+		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
+			var targetLength = target.Length;
 			var costMatrix = Enumerable
 			  .Range(0, source.Length + 1)
-			  .Select(line => new short[target.Length + 1])
+			  .Select(line => new short[targetLength + 1])
 			  .ToArray();
 
 			for (short i = 1; i <= source.Length; ++i)

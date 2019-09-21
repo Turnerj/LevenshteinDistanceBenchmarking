@@ -7,9 +7,9 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 {
-	class VectorAdditionCalculator : ILevenshteinDistanceCalculator
+	class VectorAdditionCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public int CalculateDistance(string source, string target)
+		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
 			var columns = target.Length + 1;
 			columns += Vector<int>.Count - (columns & (Vector<int>.Count - 1));

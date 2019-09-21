@@ -30,7 +30,7 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 		public void Parallel()
 		{
 			new ParallelProcessingCalculator()
-				.CalculateDistance(ComparisonStringA, ComparisonStringB);
+				.CalculateDistance(ComparisonStringA.AsMemory(), ComparisonStringB.AsMemory());
 		}
 	}
 }

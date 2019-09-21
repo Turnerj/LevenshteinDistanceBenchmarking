@@ -6,6 +6,16 @@ namespace LevenshteinDistanceBenchmarking.Implementations
 {
 	interface ILevenshteinDistanceCalculator
 	{
-		int CalculateDistance(string source, string target);
+
+	}
+
+	interface ILevenshteinDistanceSpanCalculator : ILevenshteinDistanceCalculator
+	{
+		int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target);
+	}
+
+	interface ILevenshteinDistanceMemoryCalculator : ILevenshteinDistanceCalculator
+	{
+		int CalculateDistance(ReadOnlyMemory<char> source, ReadOnlyMemory<char> target);
 	}
 }
