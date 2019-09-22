@@ -106,6 +106,14 @@ namespace LevenshteinDistanceBenchmarking
 				""
 			));
 
+			ValidationData.Add(new Tuple<string, string>(
+				@"Hello!
+This text is across multiple lines!",
+				@"Yo!
+This text is also across multiple lines!
+Woooo!"
+			));
+
 			//Extra long string checks
 			var baseString = "abcdefghij";
 			var counts = new[] { 128, 512 };
