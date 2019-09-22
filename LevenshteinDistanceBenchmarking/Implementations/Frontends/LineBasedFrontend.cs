@@ -165,24 +165,28 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 			var lineStart = 0;
 			var cursor = 0;
 
-			void CaptureLineInfo(ReadOnlySpan<char> text)
+			static LineInfo CaptureLineInfo(ReadOnlySpan<char> text, int lineStart, int cursor)
 			{
 				var length = cursor - lineStart;
 				var line = text.Slice(lineStart, length);
 				var hash = CreateMD5(line);
-				result.Add(new LineInfo(hash, lineStart, length));
-				lineStart = cursor + 1;
+				return new LineInfo(hash, lineStart, length);
 			}
 
 			for (; cursor < text.Length; cursor++)
 			{
 				if (text[cursor] == '\n')
 				{
-					CaptureLineInfo(text);
+					result.Add(
+						CaptureLineInfo(text, lineStart, cursor + 1)
+					);
+					lineStart = cursor + 1;
 				}
 			}
 			
-			CaptureLineInfo(text);
+			result.Add(
+				CaptureLineInfo(text, lineStart, cursor)
+			);
 
 			return result;
 		}
