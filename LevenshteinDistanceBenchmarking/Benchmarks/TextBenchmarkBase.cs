@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Benchmarks
@@ -29,6 +30,11 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 			builder.Append(baseString.Substring(0, remainder));
 
 			return builder.ToString();
+		}
+
+		protected static string FromTestData(string fileName)
+		{
+			return File.ReadAllText("TestData/" + fileName);
 		}
 	}
 }

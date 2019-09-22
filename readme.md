@@ -281,3 +281,39 @@ Frontends optimise the comparison, applying various shortcuts and other performa
 |                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
 |         Baseline | aaaaa(...)aaaaa [100] | aaaaa(...)aaaaa [100] | 37,003.01 ns | 685.6607 ns | 641.3675 ns | 36,733.06 ns | 37,895.18 ns | 1.000 |    0.00 | 14.2212 |     - |     - |   44664 B |
 | ShortcutFrontend | aaaaa(...)aaaaa [100] | aaaaa(...)aaaaa [100] |    203.49 ns |   3.8548 ns |   3.6058 ns |    205.49 ns |    207.00 ns | 0.006 |    0.00 |  0.0918 |     - |     - |     288 B |
+
+### Line Equality Benchmark
+
+Line equality is a particular frontend optimisation where subsections blocks can be individually processed through a calculator. This is achieved by performing a basic line-hash based Levenshtein calculation, taking only continuous regions of difference to create a subsection.
+
+The end result eliminates lines (that are equal between the source and target) between any number of lines that are different.
+
+
+|       Method |            TestStringA |            TestStringB |            Mean |          Error |         StdDev |          Median |             Max | Ratio | RatioSD |     Gen 0 |     Gen 1 |     Gen 2 |  Allocated |
+|------------- |----------------------- |----------------------- |----------------:|---------------:|---------------:|----------------:|----------------:|------:|--------:|----------:|----------:|----------:|-----------:|
+|     Baseline |                        |                        |        117.5 ns |       1.581 ns |       1.401 ns |        117.4 ns |        120.1 ns |  1.00 |    0.00 |    0.0842 |         - |         - |      264 B |
+| LineEquality |                        |                        |      3,464.2 ns |      18.093 ns |      16.924 ns |      3,456.5 ns |      3,499.3 ns | 29.49 |    0.40 |    0.6104 |         - |         - |     1920 B |
+|              |                        |                        |                 |                |                |                 |                 |       |         |           |           |           |            |
+|     Baseline |                        | Cras (...)sem.  [3483] |      3,482.9 ns |      34.223 ns |      32.012 ns |      3,482.7 ns |      3,552.7 ns |  1.00 |    0.00 |    4.5242 |         - |         - |    14192 B |
+| LineEquality |                        | Cras (...)sem.  [3483] |     35,222.4 ns |     194.693 ns |     172.590 ns |     35,191.4 ns |     35,641.1 ns | 10.11 |    0.09 |    5.9814 |         - |         - |    18792 B |
+|              |                        |                        |                 |                |                |                 |                 |       |         |           |           |           |            |
+|     Baseline |                        |  aaaaa(...)aaaaa [100] |        221.0 ns |       1.907 ns |       1.691 ns |        221.1 ns |        224.1 ns |  1.00 |    0.00 |    0.2115 |         - |         - |      664 B |
+| LineEquality |                        |  aaaaa(...)aaaaa [100] |      3,776.9 ns |      19.939 ns |      16.650 ns |      3,778.9 ns |      3,805.6 ns | 17.09 |    0.18 |    0.6371 |         - |         - |     2008 B |
+|              |                        |                        |                 |                |                |                 |                 |       |         |           |           |           |            |
+|     Baseline | Lorem(...)sem.  [2948] |                        |     59,759.4 ns |   1,178.446 ns |   1,968.918 ns |     60,813.8 ns |     62,069.9 ns |  1.00 |    0.00 |   35.7666 |    0.1221 |         - |   118184 B |
+| LineEquality | Lorem(...)sem.  [2948] |                        |     85,275.8 ns |   1,345.520 ns |   1,192.769 ns |     85,123.9 ns |     87,232.3 ns |  1.45 |    0.07 |   38.8184 |    0.1221 |         - |   122504 B |
+|              |                        |                        |                 |                |                |                 |                 |       |         |           |           |           |            |
+|     Baseline | Lorem(...)sem.  [2948] | Cras (...)sem.  [3483] | 93,635,246.4 ns | 665,907.685 ns | 590,309.818 ns | 93,683,775.0 ns | 94,916,083.3 ns |  1.00 |    0.00 | 7166.6667 | 2833.3333 | 1000.0000 | 41191856 B |
+| LineEquality | Lorem(...)sem.  [2948] | Cras (...)sem.  [3483] |  8,452,928.5 ns |  42,368.538 ns |  37,558.606 ns |  8,449,811.7 ns |  8,512,154.7 ns |  0.09 |    0.00 | 1078.1250 |  500.0000 |         - |  5928672 B |
+|              |                        |                        |                 |                |                |                 |                 |       |         |           |           |           |            |
+|     Baseline | Lorem(...)sem.  [2948] |  aaaaa(...)aaaaa [100] |  1,475,931.7 ns |   9,692.070 ns |   7,566.930 ns |  1,477,820.1 ns |  1,484,168.3 ns |  1.00 |    0.00 |  212.8906 |  105.4688 |         - |  1297784 B |
+| LineEquality | Lorem(...)sem.  [2948] |  aaaaa(...)aaaaa [100] |  1,496,422.3 ns |  11,294.490 ns |  10,564.873 ns |  1,497,300.4 ns |  1,513,959.6 ns |  1.01 |    0.01 |  224.6094 |  111.3281 |         - |  1302104 B |
+|              |                        |                        |                 |                |                |                 |                 |       |         |           |           |           |            |
+|     Baseline |  aaaaa(...)aaaaa [100] |                        |      1,989.0 ns |      20.093 ns |      18.795 ns |      1,989.9 ns |      2,028.6 ns |  1.00 |    0.00 |    1.3580 |         - |         - |     4264 B |
+| LineEquality |  aaaaa(...)aaaaa [100] |                        |      5,726.3 ns |      41.361 ns |      38.690 ns |      5,728.4 ns |      5,822.0 ns |  2.88 |    0.04 |    1.7853 |         - |         - |     5608 B |
+|              |                        |                        |                 |                |                |                 |                 |       |         |           |           |           |            |
+|     Baseline |  aaaaa(...)aaaaa [100] | Cras (...)sem.  [3483] |  1,926,913.3 ns |  37,864.053 ns |  35,418.059 ns |  1,909,598.0 ns |  1,997,010.7 ns |  1.00 |    0.00 |  232.4219 |  115.2344 |         - |  1410992 B |
+| LineEquality |  aaaaa(...)aaaaa [100] | Cras (...)sem.  [3483] |  1,908,478.7 ns |   8,438.083 ns |   7,892.988 ns |  1,907,402.5 ns |  1,926,271.1 ns |  0.99 |    0.02 |  232.4219 |  115.2344 |         - |  1415592 B |
+|              |                        |                        |                 |                |                |                 |                 |       |         |           |           |           |            |
+|     Baseline |  aaaaa(...)aaaaa [100] |  aaaaa(...)aaaaa [100] |     43,362.2 ns |     225.415 ns |     199.825 ns |     43,394.2 ns |     43,725.8 ns |  1.00 |    0.00 |   14.2212 |         - |         - |    44664 B |
+| LineEquality |  aaaaa(...)aaaaa [100] |  aaaaa(...)aaaaa [100] |     47,130.9 ns |     301.743 ns |     282.251 ns |     47,124.7 ns |     47,609.4 ns |  1.09 |    0.01 |   14.7095 |         - |         - |    46320 B |

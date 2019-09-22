@@ -7,6 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="TestData\*.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestData\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
   </ItemGroup>
 
