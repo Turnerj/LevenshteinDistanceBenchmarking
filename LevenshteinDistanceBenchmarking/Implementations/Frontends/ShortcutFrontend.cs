@@ -37,6 +37,16 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 			var sourceLength = sourceEnd - startIndex;
 			var targetLength = targetEnd - startIndex;
 
+			if (sourceLength == 0)
+			{
+				return targetLength;
+			}
+
+			if (targetLength == 0)
+			{
+				return sourceLength;
+			}
+
 			return Calculator.CalculateDistance(
 				source.Slice(startIndex, sourceLength),
 				target.Slice(startIndex, targetLength)
