@@ -32,12 +32,15 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 			}
 		}
 
-		private struct LineInfo
+		private class LineInfo
 		{
 			public readonly string Hash;
 			public readonly int Index;
 			public readonly int Length;
 
+			public static readonly LineInfo NoLine = new LineInfo();
+
+			private LineInfo() { }
 			public LineInfo(string hash, int index, int length)
 			{
 				Hash = hash;
@@ -77,14 +80,16 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 				.Select(line => new int[targetLines.Count + 1])
 				.ToArray();
 
-			for (var i = 1; i <= sourceLines.Count; ++i)
+			for (var i = 1; i <= targetLines.Count; ++i)
 			{
+				opMatrix[0][i] = EditOperationKind.Add;
 				costMatrix[0][i] = i;
 			}
 
 			for (var i = 1; i <= sourceLines.Count; ++i)
 			{
 				costMatrix[i & 1][0] = i;
+				opMatrix[i][0] = EditOperationKind.Remove;
 
 				for (var j = 1; j <= targetLines.Count; ++j)
 				{
@@ -120,25 +125,35 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 				if (op == EditOperationKind.Add)
 				{
 					x -= 1;
-					result.Push(new EditOperation(sourceLines[y], targetLines[x], op));
 				}
 				else if (op == EditOperationKind.Remove)
 				{
 					y -= 1;
-					result.Push(new EditOperation(sourceLines[y], targetLines[x], op));
 				}
 				else if (op == EditOperationKind.Edit)
 				{
 					x -= 1;
 					y -= 1;
-
-					if (sourceLines[y].Hash != targetLines[x].Hash)
-					{
-						result.Push(new EditOperation(sourceLines[y], targetLines[x], op));
-					}
 				}
 				else // Start of the matching (EditOperationKind.None)
 					break;
+
+				var targetLine = LineInfo.NoLine;
+				if (x < targetLines.Count)
+				{
+					targetLine = targetLines[x];
+				}
+
+				var sourceLine = LineInfo.NoLine;
+				if (y < sourceLines.Count)
+				{
+					sourceLine = sourceLines[y];
+				}
+
+				if (sourceLine.Hash != targetLine.Hash)
+				{
+					result.Push(new EditOperation(sourceLine, targetLine, op));
+				}
 			}
 
 			return result.ToArray();
