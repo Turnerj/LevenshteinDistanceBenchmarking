@@ -227,3 +227,57 @@ Multi-op is where the inner most for-loop is unrolled a certain number of times.
 |        Baseline |             131072 |          NA |         NA |         NA |          NA |     ? |       ? |         - |         - |         - |            - |
 | BestNonParallel |             131072 | 35,832.4 ms | 258.784 ms | 242.067 ms | 36,136.7 ms |     ? |       ? |         - |         - |         - |         24 B |
 |    BestParallel |             131072 | 12,010.1 ms | 139.669 ms | 130.647 ms | 12,254.8 ms |     ? |       ? |         - |         - |         - |       2856 B |
+
+### Frontend Comparison
+
+Frontends optimise the comparison, applying various shortcuts and other performance boosts. Think of it as applying a "best case scenario" to the calculator.
+
+|           Method |           TestStringA |           TestStringB |         Mean |       Error |      StdDev |       Median |          Max | Ratio | RatioSD |   Gen 0 | Gen 1 | Gen 2 | Allocated |
+|----------------- |---------------------- |---------------------- |-------------:|------------:|------------:|-------------:|-------------:|------:|--------:|--------:|------:|------:|----------:|
+|         Baseline |                       |                       |    106.59 ns |   2.7617 ns |   7.9682 ns |    102.91 ns |    128.06 ns |  1.00 |    0.00 |  0.0842 |     - |     - |     264 B |
+| ShortcutFrontend |                       |                       |     12.14 ns |   0.2641 ns |   0.2594 ns |     12.23 ns |     12.40 ns |  0.12 |    0.01 |  0.0153 |     - |     - |      48 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |                       |          Hello world! |    126.64 ns |   2.4577 ns |   2.7317 ns |    127.63 ns |    130.04 ns |  1.00 |    0.00 |  0.0994 |     - |     - |     312 B |
+| ShortcutFrontend |                       |          Hello world! |     12.34 ns |   0.2574 ns |   0.2408 ns |     12.42 ns |     12.58 ns |  0.10 |    0.00 |  0.0153 |     - |     - |      48 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |                       |                  TEST |    107.58 ns |   2.1784 ns |   2.5087 ns |    107.15 ns |    111.62 ns |  1.00 |    0.00 |  0.0892 |     - |     - |     280 B |
+| ShortcutFrontend |                       |                  TEST |     14.09 ns |   0.3158 ns |   0.6591 ns |     14.36 ns |     14.92 ns |  0.13 |    0.01 |  0.0153 |     - |     - |      48 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |                       | aaaaa(...)aaaaa [100] |    196.70 ns |   2.7410 ns |   2.5640 ns |    197.12 ns |    199.62 ns |  1.00 |    0.00 |  0.2115 |     - |     - |     664 B |
+| ShortcutFrontend |                       | aaaaa(...)aaaaa [100] |     12.89 ns |   0.2867 ns |   0.2944 ns |     13.03 ns |     13.28 ns |  0.07 |    0.00 |  0.0153 |     - |     - |      48 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |  Hello(...)orld! [28] |                       |    583.10 ns |  11.0152 ns |  10.3037 ns |    588.06 ns |    592.45 ns |  1.00 |    0.00 |  0.4406 |     - |     - |    1384 B |
+| ShortcutFrontend |  Hello(...)orld! [28] |                       |     12.28 ns |   0.2791 ns |   0.2866 ns |     12.34 ns |     12.74 ns |  0.02 |    0.00 |  0.0153 |     - |     - |      48 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |  Hello(...)orld! [28] |          Hello world! |  2,007.71 ns |  39.0904 ns |  38.3920 ns |  2,026.29 ns |  2,047.02 ns |  1.00 |    0.00 |  0.8850 |     - |     - |    2776 B |
+| ShortcutFrontend |  Hello(...)orld! [28] |          Hello world! |    415.29 ns |   8.2982 ns |   9.2234 ns |    421.28 ns |    425.57 ns |  0.21 |    0.01 |  0.2956 |     - |     - |     928 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |  Hello(...)orld! [28] |                  TEST |  1,040.23 ns |  20.7510 ns |  36.8849 ns |  1,034.87 ns |  1,122.53 ns |  1.00 |    0.00 |  0.5875 |     - |     - |    1848 B |
+| ShortcutFrontend |  Hello(...)orld! [28] |                  TEST |  1,047.93 ns |  20.5169 ns |  44.6021 ns |  1,028.80 ns |  1,174.54 ns |  1.02 |    0.05 |  0.5951 |     - |     - |    1872 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |  Hello(...)orld! [28] | aaaaa(...)aaaaa [100] | 12,142.82 ns | 190.4866 ns | 178.1813 ns | 12,206.80 ns | 12,379.99 ns |  1.00 |    0.00 |  4.1351 |     - |     - |   12984 B |
+| ShortcutFrontend |  Hello(...)orld! [28] | aaaaa(...)aaaaa [100] | 11,079.71 ns | 185.7680 ns | 173.7675 ns | 11,154.50 ns | 11,225.97 ns |  0.91 |    0.02 |  4.1351 |     - |     - |   13008 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |            NOT A TEST |                       |    279.84 ns |   5.5880 ns |   6.2111 ns |    277.47 ns |    292.01 ns |  1.00 |    0.00 |  0.2112 |     - |     - |     664 B |
+| ShortcutFrontend |            NOT A TEST |                       |     14.67 ns |   0.2853 ns |   0.2669 ns |     14.68 ns |     15.04 ns |  0.05 |    0.00 |  0.0153 |     - |     - |      48 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |            NOT A TEST |          Hello world! |    797.03 ns |  13.3788 ns |  12.5145 ns |    801.85 ns |    807.20 ns |  1.00 |    0.00 |  0.3796 |     - |     - |    1192 B |
+| ShortcutFrontend |            NOT A TEST |          Hello world! |    751.81 ns |   7.9196 ns |   7.4080 ns |    753.86 ns |    758.94 ns |  0.94 |    0.01 |  0.3872 |     - |     - |    1216 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |            NOT A TEST |                  TEST |    463.20 ns |   8.9701 ns |   9.2116 ns |    467.00 ns |    475.04 ns |  1.00 |    0.00 |  0.2675 |     - |     - |     840 B |
+| ShortcutFrontend |            NOT A TEST |                  TEST |    240.66 ns |   4.5041 ns |   4.2131 ns |    242.37 ns |    245.29 ns |  0.52 |    0.01 |  0.1683 |     - |     - |     528 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline |            NOT A TEST | aaaaa(...)aaaaa [100] |  4,373.61 ns |  84.6406 ns |  94.0778 ns |  4,407.84 ns |  4,506.95 ns |  1.00 |    0.00 |  1.6098 |     - |     - |    5064 B |
+| ShortcutFrontend |            NOT A TEST | aaaaa(...)aaaaa [100] |  4,248.81 ns |  80.9086 ns |  75.6819 ns |  4,279.18 ns |  4,304.45 ns |  0.97 |    0.02 |  1.6174 |     - |     - |    5088 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline | aaaaa(...)aaaaa [100] |                       |  1,737.91 ns |  32.2547 ns |  30.1711 ns |  1,750.18 ns |  1,770.04 ns | 1.000 |    0.00 |  1.3580 |     - |     - |    4264 B |
+| ShortcutFrontend | aaaaa(...)aaaaa [100] |                       |     13.05 ns |   0.2980 ns |   0.4551 ns |     12.95 ns |     13.86 ns | 0.008 |    0.00 |  0.0153 |     - |     - |      48 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline | aaaaa(...)aaaaa [100] |          Hello world! |  6,539.40 ns | 128.7073 ns | 188.6575 ns |  6,527.32 ns |  6,990.29 ns |  1.00 |    0.00 |  2.8992 |     - |     - |    9112 B |
+| ShortcutFrontend | aaaaa(...)aaaaa [100] |          Hello world! |  6,195.82 ns | 117.1243 ns | 115.0318 ns |  6,242.89 ns |  6,301.87 ns |  0.94 |    0.03 |  2.9068 |     - |     - |    9136 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline | aaaaa(...)aaaaa [100] |                  TEST |  3,322.10 ns |  63.2162 ns |  64.9184 ns |  3,352.05 ns |  3,397.57 ns |  1.00 |    0.00 |  1.8730 |     - |     - |    5880 B |
+| ShortcutFrontend | aaaaa(...)aaaaa [100] |                  TEST |  3,202.66 ns |  53.5570 ns |  50.0973 ns |  3,182.24 ns |  3,288.93 ns |  0.97 |    0.03 |  1.8806 |     - |     - |    5904 B |
+|                  |                       |                       |              |             |             |              |              |       |         |         |       |       |           |
+|         Baseline | aaaaa(...)aaaaa [100] | aaaaa(...)aaaaa [100] | 37,003.01 ns | 685.6607 ns | 641.3675 ns | 36,733.06 ns | 37,895.18 ns | 1.000 |    0.00 | 14.2212 |     - |     - |   44664 B |
+| ShortcutFrontend | aaaaa(...)aaaaa [100] | aaaaa(...)aaaaa [100] |    203.49 ns |   3.8548 ns |   3.6058 ns |    205.49 ns |    207.00 ns | 0.006 |    0.00 |  0.0918 |     - |     - |     288 B |
