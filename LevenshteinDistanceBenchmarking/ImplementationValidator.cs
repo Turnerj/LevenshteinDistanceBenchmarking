@@ -114,6 +114,16 @@ This text is also across multiple lines!
 Woooo!"
 			));
 
+			ValidationData.Add(new Tuple<string, string>(
+				@"Nulla nec ipsum sit amet enim malesuada dapibus vel quis mi.
+
+
+Nulla nec ipsum sit amet enim malesuada dapibus vel quis mi. Proin lacinia arcu non blandit mattis.
+",
+				@"
+Proin lacinia arcu non blandit mattis."
+			));
+
 			//Extra long string checks
 			var baseString = "abcdefghij";
 			var counts = new[] { 128, 512 };
