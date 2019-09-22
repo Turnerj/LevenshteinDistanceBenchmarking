@@ -38,7 +38,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 			var sourceLength = sourceEnd - startIndex;
 			var targetLength = targetEnd - startIndex;
 
-			//Shortcut any insert/edit/deletes in the middle of the strings
+			//Check the trimmed values are not empty
 			if (sourceLength == 0)
 			{
 				return targetLength;
