@@ -125,35 +125,27 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 				if (op == EditOperationKind.Add)
 				{
 					x -= 1;
+					result.Push(new EditOperation(LineInfo.NoLine, targetLines[x], op));
 				}
 				else if (op == EditOperationKind.Remove)
 				{
 					y -= 1;
+					result.Push(new EditOperation(sourceLines[y], LineInfo.NoLine, op));
 				}
 				else if (op == EditOperationKind.Edit)
 				{
 					x -= 1;
 					y -= 1;
+
+					var sourceLine = sourceLines[y];
+					var targetLine = targetLines[x];
+					if (sourceLine.Hash != targetLine.Hash)
+					{
+						result.Push(new EditOperation(sourceLine, targetLine, op));
+					}
 				}
 				else // Start of the matching (EditOperationKind.None)
 					break;
-
-				var targetLine = LineInfo.NoLine;
-				if (x < targetLines.Count)
-				{
-					targetLine = targetLines[x];
-				}
-
-				var sourceLine = LineInfo.NoLine;
-				if (y < sourceLines.Count)
-				{
-					sourceLine = sourceLines[y];
-				}
-
-				if (sourceLine.Hash != targetLine.Hash)
-				{
-					result.Push(new EditOperation(sourceLine, targetLine, op));
-				}
 			}
 
 			return result.ToArray();
