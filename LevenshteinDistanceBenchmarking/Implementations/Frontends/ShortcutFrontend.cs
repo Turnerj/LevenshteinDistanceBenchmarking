@@ -10,16 +10,17 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 
 		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
+			//Shortcut any processing if either string is empty
 			if (source.Length == 0)
 			{
 				return target.Length;
 			}
-
 			if (target.Length == 0)
 			{
 				return source.Length;
 			}
 
+			//Identify and trim any common prefix or suffix between the strings
 			var startIndex = 0;
 			var sourceEnd = source.Length;
 			var targetEnd = target.Length;
@@ -37,14 +38,26 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 			var sourceLength = sourceEnd - startIndex;
 			var targetLength = targetEnd - startIndex;
 
+			//Shortcut any insert/edit/deletes in the middle of the strings
 			if (sourceLength == 0)
 			{
 				return targetLength;
 			}
-
 			if (targetLength == 0)
 			{
 				return sourceLength;
+			}
+
+			//Switch around variables so outer loop runs less
+			if (targetLength < sourceLength)
+			{
+				var tempSource = source;
+				source = target;
+				target = tempSource;
+
+				var tempSourceLength = sourceLength;
+				sourceLength = targetLength;
+				targetLength = tempSourceLength;
 			}
 
 			return Calculator.CalculateDistance(
