@@ -3,8 +3,14 @@
 ## Running the Benchmarks
 
 1. Make sure the application is in "Release" mode
-2. Run the application without the debugger attached
-3. After calculator validation completes (should take a few seconds), select the benchmark to run
+2. Run the "LevenshteinDistanceBenchmarking" project without the debugger attached
+3. Select the benchmark(s) to run
+
+## Validating Calculators
+
+1. Run the "LevenshteinDistanceBenchmarking.Validation" project
+2. ...
+3. Profit
 
 ## My Benchmark Results
 
