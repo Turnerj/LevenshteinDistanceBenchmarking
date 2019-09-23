@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
+namespace LevenshteinDistanceBenchmarking.Implementations.IsolatedImprovements
 {
 	class ParallelProcessingCalculator : ILevenshteinDistanceMemoryCalculator
 	{

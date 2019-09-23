@@ -1,18 +1,23 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
-namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
+namespace LevenshteinDistanceBenchmarking.Implementations.IsolatedImprovements.DataStructure
 {
-	class DenseMatrixCalculator : ILevenshteinDistanceSpanCalculator
+	class UnmanagedDenseMatrixCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
+		public unsafe int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
 			var rows = source.Length + 1;
 			var columns = target.Length + 1;
 
-			var costMatrix = new int[rows * columns];
+			var costMatrixPointer = Marshal.AllocHGlobal(Marshal.SizeOf<int>() * columns * rows);
+			var costMatrix = new Span<int>(costMatrixPointer.ToPointer(), rows * columns);
+
+			costMatrix[0] = 0;
 
 			for (var i = 1; i <= source.Length; ++i)
 			{
@@ -36,7 +41,9 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 				}
 			}
 
-			return costMatrix[(rows * columns) - 1];
+			var result = costMatrix[(rows * columns) - 1];
+			Marshal.FreeHGlobal(costMatrixPointer);
+			return result;
 		}
 	}
 }

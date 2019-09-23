@@ -3,33 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
+namespace LevenshteinDistanceBenchmarking.Implementations.IsolatedImprovements.DataType
 {
-	class LocalStringLengthCalculator : ILevenshteinDistanceSpanCalculator
+	class FloatMatrixCalculator : ILevenshteinDistanceSpanCalculator
 	{
 		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
-			var sourceLength = source.Length;
 			var targetLength = target.Length;
-
 			var costMatrix = Enumerable
-			  .Range(0, sourceLength + 1)
-			  .Select(line => new int[targetLength + 1])
+			  .Range(0, source.Length + 1)
+			  .Select(line => new float[targetLength + 1])
 			  .ToArray();
 
-			for (var i = 1; i <= sourceLength; ++i)
+			for (var i = 1; i <= source.Length; ++i)
 			{
 				costMatrix[i][0] = i;
 			}
 
-			for (var i = 1; i <= targetLength; ++i)
+			for (var i = 1; i <= target.Length; ++i)
 			{
 				costMatrix[0][i] = i;
 			}
 
-			for (var i = 1; i <= sourceLength; ++i)
+			for (var i = 1; i <= source.Length; ++i)
 			{
-				for (var j = 1; j <= targetLength; ++j)
+				for (var j = 1; j <= target.Length; ++j)
 				{
 					var insert = costMatrix[i][j - 1] + 1;
 					var delete = costMatrix[i - 1][j] + 1;
@@ -39,7 +37,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 				}
 			}
 
-			return costMatrix[sourceLength][targetLength];
+			return (int)costMatrix[source.Length][target.Length];
 		}
 	}
 }

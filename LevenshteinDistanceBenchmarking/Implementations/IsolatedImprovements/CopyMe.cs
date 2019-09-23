@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
+namespace LevenshteinDistanceBenchmarking.Implementations.IsolatedImprovements
 {
-	class LocalRowDataCalculator : ILevenshteinDistanceSpanCalculator
+	class CopyMe : ILevenshteinDistanceSpanCalculator
 	{
 		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
@@ -27,16 +27,13 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 
 			for (var i = 1; i <= source.Length; ++i)
 			{
-				var currentRow = costMatrix[i];
-				var previousRow = costMatrix[i - 1];
-
 				for (var j = 1; j <= target.Length; ++j)
 				{
-					var insert = currentRow[j - 1] + 1;
-					var delete = previousRow[j] + 1;
-					var edit = previousRow[j - 1] + (source[i - 1] == target[j - 1] ? 0 : 1);
+					var insert = costMatrix[i][j - 1] + 1;
+					var delete = costMatrix[i - 1][j] + 1;
+					var edit = costMatrix[i - 1][j - 1] + (source[i - 1] == target[j - 1] ? 0 : 1);
 
-					currentRow[j] = Math.Min(Math.Min(insert, delete), edit);
+					costMatrix[i][j] = Math.Min(Math.Min(insert, delete), edit);
 				}
 			}
 

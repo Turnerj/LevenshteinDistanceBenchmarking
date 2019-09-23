@@ -2,22 +2,19 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 
-namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
+namespace LevenshteinDistanceBenchmarking.Implementations.IsolatedImprovements.DataStructure
 {
-	class UnmanagedDenseMatrixCalculator : ILevenshteinDistanceSpanCalculator
+	class ArrayPoolDenseMatrixCalculator : ILevenshteinDistanceSpanCalculator
 	{
-		public unsafe int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
+		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
 			var rows = source.Length + 1;
 			var columns = target.Length + 1;
 
-			var costMatrixPointer = Marshal.AllocHGlobal(Marshal.SizeOf<int>() * columns * rows);
-			var costMatrix = new Span<int>(costMatrixPointer.ToPointer(), rows * columns);
-
-			costMatrix[0] = 0;
+			var arrayPool = ArrayPool<int>.Shared;
+			var costMatrix = arrayPool.Rent(rows * columns);
 
 			for (var i = 1; i <= source.Length; ++i)
 			{
@@ -28,6 +25,8 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 			{
 				costMatrix[i] = i;
 			}
+
+			costMatrix[0] = 0;
 
 			for (var i = 1; i <= source.Length; ++i)
 			{
@@ -42,7 +41,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
 			}
 
 			var result = costMatrix[(rows * columns) - 1];
-			Marshal.FreeHGlobal(costMatrixPointer);
+			arrayPool.Return(costMatrix);
 			return result;
 		}
 	}

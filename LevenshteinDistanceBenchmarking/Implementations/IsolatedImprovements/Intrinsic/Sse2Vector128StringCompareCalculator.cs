@@ -7,7 +7,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 
-namespace LevenshteinDistanceBenchmarking.Implementations.Alternatives
+namespace LevenshteinDistanceBenchmarking.Implementations.IsolatedImprovements.Intrinsic
 {
 	class Sse2Vector128StringCompareCalculator : ILevenshteinDistanceSpanCalculator
 	{

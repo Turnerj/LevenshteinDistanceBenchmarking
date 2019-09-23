@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LevenshteinDistanceBenchmarking.Benchmarks
+namespace LevenshteinDistanceBenchmarking.Benchmarks.Frontends
 {
 	[CoreJob, MemoryDiagnoser, MaxColumn]
 	public class FrontendBenchmark : TextBenchmarkBase

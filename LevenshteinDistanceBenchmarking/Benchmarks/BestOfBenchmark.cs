@@ -1,6 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
 using LevenshteinDistanceBenchmarking.Implementations;
-using LevenshteinDistanceBenchmarking.Implementations.Alternatives;
 using System;
 using System.Collections.Generic;
 using System.Text;
