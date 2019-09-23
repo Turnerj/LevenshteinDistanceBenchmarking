@@ -17,15 +17,15 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks.Frontends
 
 		public static IEnumerable<string> TestStringValuesA()
 		{
-			yield return FromTestData("MultilineLipsum1a.txt");
+			yield return Utilities.ReadTestData("MultilineLipsum1a.txt");
 			yield return "";
-			yield return BuildString("a", 100);
+			yield return Utilities.BuildString("a", 100);
 		}
 		public static IEnumerable<string> TestStringValuesB()
 		{
-			yield return FromTestData("MultilineLipsum1b.txt");
+			yield return Utilities.ReadTestData("MultilineLipsum1b.txt");
 			yield return "";
-			yield return BuildString("a", 100);
+			yield return Utilities.BuildString("a", 100);
 		}
 
 		[Benchmark(Baseline = true)]

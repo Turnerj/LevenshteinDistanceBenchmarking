@@ -20,14 +20,14 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks.Frontends
 			yield return "Hello, this is a test world!";
 			yield return "NOT A TEST";
 			yield return "";
-			yield return BuildString("a", 100);
+			yield return Utilities.BuildString("a", 100);
 		}
 		public static IEnumerable<string> TestStringValuesB()
 		{
 			yield return "Hello world!";
 			yield return "TEST";
 			yield return "";
-			yield return BuildString("a", 100);
+			yield return Utilities.BuildString("a", 100);
 		}
 
 		[Benchmark(Baseline = true)]

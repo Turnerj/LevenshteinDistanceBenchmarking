@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace LevenshteinDistanceBenchmarking
+namespace LevenshteinDistanceBenchmarking.Validation
 {
 	class ImplementationValidator
 	{
@@ -17,7 +17,8 @@ namespace LevenshteinDistanceBenchmarking
 
 		public ImplementationValidator()
 		{
-			var engineTypes = Assembly.GetExecutingAssembly().GetTypes()
+			var implementationAssembly = typeof(Utilities).Assembly;
+			var engineTypes = implementationAssembly.GetTypes()
 				.Where(t => 
 					t.IsClass && 
 					typeof(ILevenshteinDistanceCalculator).IsAssignableFrom(t) && 
@@ -27,6 +28,33 @@ namespace LevenshteinDistanceBenchmarking
 				.ToArray();
 
 			Implementations = engineTypes.Select(t => Activator.CreateInstance(t) as ILevenshteinDistanceCalculator).ToArray();
+		}
+
+		private void WriteTestRunning(string implementation)
+		{
+			ClearLine();
+			Console.Write($"[RUNNING] {implementation}...");
+		}
+		private void WriteTestSuccess(string implementation, TimeSpan time)
+		{
+			ClearLine();
+			Console.ForegroundColor = ConsoleColor.DarkGreen;
+			Console.Write($"[PASSED!] {implementation}... ".PadRight(65));
+			Console.WriteLine($"{time.TotalMilliseconds:0.00}ms".PadLeft(14));
+			Console.ResetColor();
+		}
+		private void WriteTestError(string implementation, string errorMessage)
+		{
+			ClearLine();
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.Write($"[FAILED!] {implementation}... ".PadRight(65));
+			Console.WriteLine(errorMessage);
+			Console.ResetColor();
+		}
+
+		private void ClearLine()
+		{
+			Console.Write("\r" + new string(' ', Console.BufferWidth) + "\r");
 		}
 
 		public void Validate()
@@ -47,7 +75,8 @@ namespace LevenshteinDistanceBenchmarking
 
 			foreach (var calculator in Implementations)
 			{
-				Console.Write($"{calculator.GetType().Name}... ".PadRight(60));
+				var implementationName = calculator.GetType().Name;
+				WriteTestRunning(implementationName);
 				var status = true;
 
 				stopwatch.Restart();
@@ -58,9 +87,7 @@ namespace LevenshteinDistanceBenchmarking
 					if (calculatorResults[i] != baselineResults[i])
 					{
 						status = false;
-						Console.ForegroundColor = ConsoleColor.Red;
-						Console.WriteLine($"Failed! (Test {i + 1} - Expected: {baselineResults[i]}, Actual: {calculatorResults[i]})");
-						Console.ResetColor();
+						WriteTestError(implementationName, $"Test {(i + 1):00} [Expected: {baselineResults[i]}, Actual: {calculatorResults[i]}]");
 						break;
 					}
 				}
@@ -68,7 +95,7 @@ namespace LevenshteinDistanceBenchmarking
 				if (status)
 				{
 					stopwatch.Stop();
-					Console.WriteLine($"Passed! ({stopwatch.ElapsedMilliseconds}ms)");
+					WriteTestSuccess(implementationName, stopwatch.Elapsed);
 				}
 			}
 			Console.ForegroundColor = ConsoleColor.Green;
@@ -124,18 +151,17 @@ Nulla nec ipsum sit amet enim malesuada dapibus vel quis mi. Proin lacinia arcu 
 Proin lacinia arcu non blandit mattis."
 			));
 
-			//Extra long string checks
+			ValidationData.Add(new Tuple<string, string>(
+				Utilities.ReadTestData("MultilineLipsum1a.txt"),
+				Utilities.ReadTestData("MultilineLipsum1b.txt")
+			));
+
+			//Extra long, single line strings
 			var baseString = "abcdefghij";
 			var counts = new[] { 128, 512 };
 			for (int i = 0, l = counts.Length; i < l; i++)
 			{
-				var builder = new StringBuilder();
-				for (int i2 = 0, l2 = counts[i]; i2 < l2; i2++)
-				{
-					builder.Append(baseString);
-				}
-
-				var comparisonString = builder.ToString();
+				var comparisonString = Utilities.BuildString(baseString, counts[i]);
 				ValidationData.Add(new Tuple<string, string>(
 					comparisonString,
 					comparisonString

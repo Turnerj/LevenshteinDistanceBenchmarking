@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace LevenshteinDistanceBenchmarking
@@ -28,6 +29,26 @@ namespace LevenshteinDistanceBenchmarking
 			{
 				PrintRow(matrix[i]);
 			}
+		}
+
+		public static string ReadTestData(string fileName)
+		{
+			return File.ReadAllText("TestData/" + fileName);
+		}
+
+		public static string BuildString(string baseString, int numberOfCharacters)
+		{
+			var builder = new StringBuilder(numberOfCharacters);
+			var charBlocks = (int)Math.Floor((double)numberOfCharacters / baseString.Length);
+			for (int i = 0, l = charBlocks; i < l; i++)
+			{
+				builder.Append(baseString);
+			}
+
+			var remainder = (int)((double)numberOfCharacters / baseString.Length % 1 * baseString.Length);
+			builder.Append(baseString.Substring(0, remainder));
+
+			return builder.ToString();
 		}
 	}
 }

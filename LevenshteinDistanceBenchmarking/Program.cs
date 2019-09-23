@@ -7,7 +7,6 @@ namespace LevenshteinDistanceBenchmarking
 	{
 		static void Main(string[] args)
 		{
-			new ImplementationValidator().Validate();
 			BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 		}
 	}

@@ -4,17 +4,17 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations
 {
-	interface ILevenshteinDistanceCalculator
+	public interface ILevenshteinDistanceCalculator
 	{
 
 	}
 
-	interface ILevenshteinDistanceSpanCalculator : ILevenshteinDistanceCalculator
+	public interface ILevenshteinDistanceSpanCalculator : ILevenshteinDistanceCalculator
 	{
 		int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target);
 	}
 
-	interface ILevenshteinDistanceMemoryCalculator : ILevenshteinDistanceCalculator
+	public interface ILevenshteinDistanceMemoryCalculator : ILevenshteinDistanceCalculator
 	{
 		int CalculateDistance(ReadOnlyMemory<char> source, ReadOnlyMemory<char> target);
 	}

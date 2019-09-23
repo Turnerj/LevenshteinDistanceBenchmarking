@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations
 {
-	class LevenshteinDistanceBaseline : ILevenshteinDistanceSpanCalculator
+	public class LevenshteinDistanceBaseline : ILevenshteinDistanceSpanCalculator
 	{
 		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
