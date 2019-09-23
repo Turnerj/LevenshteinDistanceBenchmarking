@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LevenshteinDistanceBenchmarking.Benchmarks
+namespace LevenshteinDistanceBenchmarking.Benchmarks.Comparisons
 {
 	[CoreJob, MemoryDiagnoser, MaxColumn]
 	public class BestParallelComparisonBenchmark : TextBenchmarkBase
