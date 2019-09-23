@@ -9,7 +9,7 @@ using System.Text;
 namespace LevenshteinDistanceBenchmarking.Benchmarks
 {
 	[CoreJob, MemoryDiagnoser, MaxColumn]
-	public class HeadToHeadBenchmark : TextBenchmarkBase
+	public class BestParallelComparisonBenchmark : TextBenchmarkBase
 	{
 		[Params(8, 128, 512, 2048, 8192)]
 		public int NumberOfCharacters;
@@ -19,35 +19,6 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks
 		{
 			InitialiseDefaultComparisonString(NumberOfCharacters);
 		}
-
-		//[Benchmark(Baseline = true)]
-		//public void Baseline()
-		//{
-		//	new BestNonParallelCalculator()
-		//		.CalculateDistance(ComparisonStringA, ComparisonStringB);
-		//}
-
-		//[Benchmark]
-		//public void Comparison()
-		//{
-		//	new BestNonParallelCalculatorComparison()
-		//		.CalculateDistance(ComparisonStringA, ComparisonStringB);
-		//}
-
-
-		//[Benchmark(Baseline = true)]
-		//public void Baseline()
-		//{
-		//	new BestNonParallelIntrinsicCalculator()
-		//		.CalculateDistance(ComparisonStringA, ComparisonStringB);
-		//}
-
-		//[Benchmark]
-		//public void Comparison()
-		//{
-		//	new BestNonParallelIntrinsicCalculatorComparison()
-		//		.CalculateDistance(ComparisonStringA, ComparisonStringB);
-		//}
 
 		[Benchmark(Baseline = true)]
 		public void Baseline()
