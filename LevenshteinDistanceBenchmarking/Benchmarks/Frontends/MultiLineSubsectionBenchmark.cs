@@ -8,7 +8,7 @@ using System.Text;
 namespace LevenshteinDistanceBenchmarking.Benchmarks.Frontends
 {
 	[CoreJob, MemoryDiagnoser, MaxColumn]
-	public class LineEqualityBenchmark : TextBenchmarkBase
+	public class MultiLineSubsectionBenchmark : TextBenchmarkBase
 	{
 		[ParamsSource(nameof(TestStringValuesA))]
 		public string TestStringA;
@@ -38,7 +38,7 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks.Frontends
 		[Benchmark]
 		public void LineEquality()
 		{
-			new LineEqualityFrontend()
+			new MultiLineSubsectionFrontend()
 				.CalculateDistance(TestStringA, TestStringB);
 		}
 	}

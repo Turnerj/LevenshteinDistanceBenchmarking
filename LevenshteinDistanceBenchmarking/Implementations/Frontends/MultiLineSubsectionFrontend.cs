@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 {
-	public class LineEqualityFrontend : ILevenshteinDistanceSpanCalculator
+	public class MultiLineSubsectionFrontend : ILevenshteinDistanceSpanCalculator
 	{
 		private readonly ILevenshteinDistanceSpanCalculator Calculator = new LevenshteinDistanceBaseline();
 
@@ -18,32 +18,25 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 			Remove
 		}
 
-		private struct DiffSubsection
+		private struct SubsectionPair
 		{
-			public readonly int SourceIndex;
-			public readonly int SourceLength;
-			public readonly int TargetIndex;
-			public readonly int TargetLength;
+			public readonly SubsectionInfo Source;
+			public readonly SubsectionInfo Target;
 
-			public DiffSubsection(int sourceIndex, int sourceLength, int targetIndex, int targetLength)
+			public SubsectionPair(SubsectionInfo source, SubsectionInfo target)
 			{
-				SourceIndex = sourceIndex;
-				SourceLength = sourceLength;
-				TargetIndex = targetIndex;
-				TargetLength = targetLength;
+				Source = source;
+				Target = target;
 			}
 		}
 
-		private class LineInfo
+		private struct SubsectionInfo
 		{
 			public readonly string Hash;
 			public readonly int Index;
 			public readonly int Length;
 
-			public static readonly LineInfo NoLine = new LineInfo();
-
-			private LineInfo() { }
-			public LineInfo(string hash, int index, int length)
+			public SubsectionInfo(string hash, int index, int length)
 			{
 				Hash = hash;
 				Index = index;
@@ -53,24 +46,24 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 
 		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
-			var sourceLines = GetLineHashes(source);
-			var targetLines = GetLineHashes(target);
+			var sourceLines = GetSubsectionHashes(source);
+			var targetLines = GetSubsectionHashes(target);
 
-			var diffSubsections = GetDiffSubsections(sourceLines, targetLines);
+			var subsectionPairs = GetSubsectionsPairs(sourceLines, targetLines);
 			var talliedDistance = 0;
 
-			for (var i = 0; i < diffSubsections.Length; i++)
+			for (var i = 0; i < subsectionPairs.Length; i++)
 			{
-				var diffSubsection = diffSubsections[i];
-				var sourceLine = source.Slice(diffSubsection.SourceIndex, diffSubsection.SourceLength);
-				var targetLine = target.Slice(diffSubsection.TargetIndex, diffSubsection.TargetLength);
+				var subsectionPair = subsectionPairs[i];
+				var sourceLine = source.Slice(subsectionPair.Source.Index, subsectionPair.Source.Length);
+				var targetLine = target.Slice(subsectionPair.Target.Index, subsectionPair.Target.Length);
 				talliedDistance += Calculator.CalculateDistance(sourceLine, targetLine);
 			}
 
 			return talliedDistance;
 		}
 
-		private DiffSubsection[] GetDiffSubsections(List<LineInfo> sourceLines, List<LineInfo> targetLines)
+		private SubsectionPair[] GetSubsectionsPairs(List<SubsectionInfo> sourceLines, List<SubsectionInfo> targetLines)
 		{
 			var opMatrix = Enumerable
 				.Range(0, sourceLines.Count + 1)
@@ -118,7 +111,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 				}
 			}
 
-			var result = new Stack<DiffSubsection>(Math.Max(sourceLines.Count, targetLines.Count));
+			var result = new Stack<SubsectionPair>(Math.Max(sourceLines.Count, targetLines.Count));
 
 			var xLength = 0;
 			var yLength = 0;
@@ -147,9 +140,12 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 
 					var sourceLine = sourceLines[y];
 					var targetLine = targetLines[x];
+
 					if (sourceLine.Hash == targetLine.Hash)
 					{
-						result.Push(new DiffSubsection(sourceLine.Index, yLength, targetLine.Index, xLength));
+						var sourceSubsection = new SubsectionInfo(null, sourceLine.Index, yLength);
+						var targetSubsection = new SubsectionInfo(null, targetLine.Index, xLength);
+						result.Push(new SubsectionPair(sourceSubsection, targetSubsection));
 						xLength = 0;
 						yLength = 0;
 					}
@@ -158,23 +154,25 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 					break;
 			}
 
-			result.Push(new DiffSubsection(sourceLines[0].Index, yLength, targetLines[0].Index, xLength));
+			var finalSourceSubsection = new SubsectionInfo(null, sourceLines[0].Index, yLength);
+			var finalTargetSubsection = new SubsectionInfo(null, targetLines[0].Index, xLength);
+			result.Push(new SubsectionPair(finalSourceSubsection, finalTargetSubsection));
 
 			return result.ToArray();
 		}
 
-		private List<LineInfo> GetLineHashes(ReadOnlySpan<char> text)
+		private List<SubsectionInfo> GetSubsectionHashes(ReadOnlySpan<char> text)
 		{
-			var result = new List<LineInfo>();
+			var result = new List<SubsectionInfo>();
 			var lineStart = 0;
 			var cursor = 0;
 
-			static LineInfo CaptureLineInfo(ReadOnlySpan<char> text, int lineStart, int cursor)
+			static SubsectionInfo CaptureLineInfo(ReadOnlySpan<char> text, int lineStart, int cursor)
 			{
 				var length = cursor - lineStart;
 				var line = text.Slice(lineStart, length);
 				var hash = CreateMD5(line);
-				return new LineInfo(hash, lineStart, length);
+				return new SubsectionInfo(hash, lineStart, length);
 			}
 
 			for (; cursor < text.Length; cursor++)
