@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -18,15 +19,31 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 			Remove
 		}
 
+		private class EditOperation
+		{
+			public readonly SubsectionInfo Source;
+			public readonly SubsectionInfo Target;
+			public readonly EditOperationKind OperationKind;
+
+			public EditOperation(SubsectionInfo source, SubsectionInfo target, EditOperationKind operationKind)
+			{
+				Source = source;
+				Target = target;
+				OperationKind = operationKind;
+			}
+		}
+
 		private struct SubsectionPair
 		{
 			public readonly SubsectionInfo Source;
 			public readonly SubsectionInfo Target;
+			public readonly EditOperationKind[] Ops;
 
-			public SubsectionPair(SubsectionInfo source, SubsectionInfo target)
+			public SubsectionPair(SubsectionInfo source, SubsectionInfo target, EditOperationKind[] ops)
 			{
 				Source = source;
 				Target = target;
+				Ops = ops;
 			}
 		}
 
@@ -50,43 +67,101 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 			var targetLines = GetSubsectionHashes(target);
 
 			var subsectionPairs = GetSubsectionsPairs(sourceLines, targetLines);
+			var joinedPairs = subsectionPairs;//JoinSubsectionsOnProximity(subsectionPairs, 32);
 			var talliedDistance = 0;
 
-			for (var i = 0; i < subsectionPairs.Length; i++)
+			for (var i = 0; i < joinedPairs.Length; i++)
 			{
-				var subsectionPair = subsectionPairs[i];
+				var subsectionPair = joinedPairs[i];
 				var sourceLine = source.Slice(subsectionPair.Source.Index, subsectionPair.Source.Length);
+				Debug.Write("Source: "); Debug.WriteLine(sourceLine.ToString());
 				var targetLine = target.Slice(subsectionPair.Target.Index, subsectionPair.Target.Length);
+				Debug.Write("Target: "); Debug.WriteLine(targetLine.ToString());
 				talliedDistance += Calculator.CalculateDistance(sourceLine, targetLine);
 			}
 
 			return talliedDistance;
 		}
 
-		private SubsectionPair[] GetSubsectionsPairs(List<SubsectionInfo> sourceLines, List<SubsectionInfo> targetLines)
+		private SubsectionPair[] JoinSubsectionsOnProximity(SubsectionPair[] subsections, int proximity)
+		{
+			var joinedSubsections = new List<SubsectionPair>();
+
+			var sourceStartIndex = -1;
+			var talliedSourceLength = 0;
+			var targetStartIndex = -1;
+			var talliedTargetLength = 0;
+
+			for (var i = 0; i < subsections.Length; i++)
+			{
+				var subsection = subsections[i];
+				if (sourceStartIndex == -1)
+				{
+					sourceStartIndex = subsection.Source.Index;
+					talliedSourceLength = subsection.Source.Length;
+					targetStartIndex = subsection.Target.Index;
+					talliedTargetLength = subsection.Target.Length;
+					continue;
+				}
+
+				var sourceEndIndex = sourceStartIndex + talliedSourceLength;
+				var targetEndIndex = targetStartIndex + talliedTargetLength;
+
+				if (
+					sourceEndIndex >= subsection.Source.Index - proximity ||
+					targetEndIndex >= subsection.Target.Index - proximity
+				)
+				{
+					talliedSourceLength += subsection.Source.Index - sourceEndIndex + subsection.Source.Length;
+					talliedTargetLength += subsection.Target.Index - targetEndIndex + subsection.Target.Length;
+				}
+				else
+				{
+					joinedSubsections.Add(new SubsectionPair(
+						new SubsectionInfo(null, sourceStartIndex, talliedSourceLength),
+						new SubsectionInfo(null, targetStartIndex, talliedTargetLength),
+						null
+					));
+					sourceStartIndex = -1;
+				}
+			}
+
+			if (sourceStartIndex != -1)
+			{
+				joinedSubsections.Add(new SubsectionPair(
+					new SubsectionInfo(null, sourceStartIndex, talliedSourceLength),
+					new SubsectionInfo(null, targetStartIndex, talliedTargetLength),
+					null
+				));
+			}
+
+			return joinedSubsections.ToArray();
+		}
+
+		private SubsectionPair[] GetSubsectionsPairs(SubsectionInfo[] sourceLines, SubsectionInfo[] targetLines)
 		{
 			var opMatrix = Enumerable
-				.Range(0, sourceLines.Count + 1)
-				.Select(line => new EditOperationKind[targetLines.Count + 1])
+				.Range(0, sourceLines.Length + 1)
+				.Select(line => new EditOperationKind[targetLines.Length + 1])
 				.ToArray();
 
 			var costMatrix = Enumerable
 				.Range(0, 2)
-				.Select(line => new int[targetLines.Count + 1])
+				.Select(line => new int[targetLines.Length + 1])
 				.ToArray();
 
-			for (var i = 1; i <= targetLines.Count; ++i)
+			for (var i = 1; i <= targetLines.Length; ++i)
 			{
 				opMatrix[0][i] = EditOperationKind.Add;
 				costMatrix[0][i] = i;
 			}
 
-			for (var i = 1; i <= sourceLines.Count; ++i)
+			for (var i = 1; i <= sourceLines.Length; ++i)
 			{
 				costMatrix[i & 1][0] = i;
 				opMatrix[i][0] = EditOperationKind.Remove;
 
-				for (var j = 1; j <= targetLines.Count; ++j)
+				for (var j = 1; j <= targetLines.Length; ++j)
 				{
 					var insert = costMatrix[i & 1][j - 1] + 1;
 					var delete = costMatrix[(i - 1) & 1][j] + 1;
@@ -111,57 +186,188 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 				}
 			}
 
-			var result = new Stack<SubsectionPair>(Math.Max(sourceLines.Count, targetLines.Count));
+			var trackedOperations = new Stack<EditOperation>(sourceLines.Length + targetLines.Length);
 
-			var xLength = 0;
-			var yLength = 0;
-
-			for (int x = targetLines.Count, y = sourceLines.Count; (x > 0) || (y > 0);)
+			for (int x = targetLines.Length, y = sourceLines.Length; (x > 0) || (y > 0);)
 			{
 				var op = opMatrix[y][x];
 
 				if (op == EditOperationKind.Add)
 				{
 					x -= 1;
-					xLength += targetLines[x].Length;
+					trackedOperations.Push(new EditOperation(default, targetLines[x], op));
 				}
 				else if (op == EditOperationKind.Remove)
 				{
 					y -= 1;
-					yLength += sourceLines[y].Length;
+					trackedOperations.Push(new EditOperation(sourceLines[y], default, op));
 				}
 				else if (op == EditOperationKind.Edit)
 				{
 					x -= 1;
 					y -= 1;
 
-					xLength += targetLines[x].Length;
-					yLength += sourceLines[y].Length;
-
-					var sourceLine = sourceLines[y];
-					var targetLine = targetLines[x];
-
-					if (sourceLine.Hash == targetLine.Hash)
+					if (sourceLines[y].Hash == targetLines[x].Hash)
 					{
-						var sourceSubsection = new SubsectionInfo(null, sourceLine.Index, yLength);
-						var targetSubsection = new SubsectionInfo(null, targetLine.Index, xLength);
-						result.Push(new SubsectionPair(sourceSubsection, targetSubsection));
-						xLength = 0;
-						yLength = 0;
+						op = EditOperationKind.None;
 					}
+
+					trackedOperations.Push(new EditOperation(sourceLines[y], targetLines[x], op));
 				}
 				else // Start of the matching (EditOperationKind.None)
 					break;
 			}
 
-			var finalSourceSubsection = new SubsectionInfo(null, sourceLines[0].Index, yLength);
-			var finalTargetSubsection = new SubsectionInfo(null, targetLines[0].Index, xLength);
-			result.Push(new SubsectionPair(finalSourceSubsection, finalTargetSubsection));
+			var mergedOps = MergeOperations(trackedOperations.ToArray());
+			return BuildSubsectionRange(mergedOps.ToArray());
+		}
+
+		private EditOperation[] MergeOperations(EditOperation[] editOperations)
+		{
+			var result = new List<EditOperation>();
+
+			for (int i = 0, l = editOperations.Length; i < l; i++)
+			{
+				var editOperation = editOperations[i];
+				if (editOperation.OperationKind == EditOperationKind.None)
+				{
+					result.Add(editOperation);
+				}
+				else
+				{
+					var sourceIndex = -1;
+					var sourceLength = 0;
+					var targetIndex = -1;
+					var targetLength = 0;
+					for (; i < l; i++)
+					{
+						editOperation = editOperations[i];
+						if (editOperation.OperationKind == EditOperationKind.None)
+						{
+							break;
+						}
+
+						if (editOperation.OperationKind == EditOperationKind.Add || editOperation.OperationKind == EditOperationKind.Edit)
+						{
+							if (targetIndex == -1)
+							{
+								targetIndex = editOperation.Target.Index;
+							}
+							targetLength += editOperation.Target.Length;
+						}
+
+						if (editOperation.OperationKind == EditOperationKind.Remove || editOperation.OperationKind == EditOperationKind.Edit)
+						{
+							if (sourceIndex == -1)
+							{
+								sourceIndex = editOperation.Source.Index;
+							}
+							sourceLength += editOperation.Source.Length;
+						}
+					}
+
+					if (sourceIndex == -1)
+					{
+						sourceIndex = 0;
+					}
+					if (targetIndex == -1)
+					{
+						targetIndex = 0;
+					}
+
+					result.Add(
+						new EditOperation(
+							new SubsectionInfo(null, sourceIndex, sourceLength), 
+							new SubsectionInfo(null, targetIndex, targetLength),
+							EditOperationKind.Edit
+						)
+					);
+
+					if (editOperation.OperationKind == EditOperationKind.None)
+					{
+						result.Add(editOperation);
+					}
+				}
+			}
 
 			return result.ToArray();
 		}
 
-		private List<SubsectionInfo> GetSubsectionHashes(ReadOnlySpan<char> text)
+		private SubsectionPair[] BuildSubsectionRange(EditOperation[] editOperations)
+		{
+			var firstMatchIndex = -1;
+			var lastMatchIndex = -1;
+			var noChangeGap = 0;
+			var maxGap = 3;
+
+			SubsectionPair CreateSubsection(int operationStartIndex, int operationEndIndex)
+			{
+				var startBoundaryIndex = operationStartIndex;
+				var endBoundaryIndex = operationEndIndex;
+				for (var i = 0; startBoundaryIndex > 0 && i < maxGap; i++, startBoundaryIndex--) ;
+				for (var i = 0; endBoundaryIndex < editOperations.Length - 1 && i < maxGap; i++, endBoundaryIndex++) ;
+
+				var firstOperation = editOperations[startBoundaryIndex];
+				var lastOperation = editOperations[endBoundaryIndex];
+
+				//The problem here is that I use "default" for different types of edit operations
+				//When I loop over the operation data, I actually need to track not only the first/last indexes but 
+				//the source/target indexes individually too (plus lengths)
+
+				var sourceIndex = firstOperation.Source.Index;
+				var sourceLength = lastOperation.Source.Index - sourceIndex + lastOperation.Source.Length;
+				var targetIndex = firstOperation.Target.Index;
+				var targetLength = lastOperation.Target.Index - targetIndex + lastOperation.Target.Length;
+
+				return new SubsectionPair(
+					new SubsectionInfo(null, sourceIndex, sourceLength),
+					new SubsectionInfo(null, targetIndex, targetLength),
+					null
+				);
+			}
+
+			var result = new List<SubsectionPair>(editOperations.Length / 2 + 1);
+
+			for (int i = 0, l = editOperations.Length; i < l; i++)
+			{
+				var editOperation = editOperations[i];
+
+				if (editOperation.OperationKind != EditOperationKind.None)
+				{
+					noChangeGap = 0;
+					
+					if (firstMatchIndex == -1)
+					{
+						firstMatchIndex = i;
+						lastMatchIndex = i;
+					}
+					else
+					{
+						lastMatchIndex = i;
+					}
+				}
+				else if (firstMatchIndex != -1)
+				{
+					noChangeGap++;
+
+					if (noChangeGap == maxGap)
+					{
+						result.Add(CreateSubsection(firstMatchIndex, lastMatchIndex));
+						firstMatchIndex = -1;
+						lastMatchIndex = -1;
+					}
+				}
+			}
+
+			if (firstMatchIndex != -1)
+			{
+				result.Add(CreateSubsection(firstMatchIndex, lastMatchIndex));
+			}
+
+			return result.ToArray();
+		}
+
+		private SubsectionInfo[] GetSubsectionHashes(ReadOnlySpan<char> text)
 		{
 			var result = new List<SubsectionInfo>();
 			var lineStart = 0;
@@ -190,7 +396,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 				CaptureLineInfo(text, lineStart, cursor)
 			);
 
-			return result;
+			return result.ToArray();
 		}
 
 		//Based on: https://stackoverflow.com/a/55490468/1676444

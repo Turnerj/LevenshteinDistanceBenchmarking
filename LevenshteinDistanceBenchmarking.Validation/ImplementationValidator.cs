@@ -19,15 +19,17 @@ namespace LevenshteinDistanceBenchmarking.Validation
 		{
 			var implementationAssembly = typeof(Utilities).Assembly;
 			var engineTypes = implementationAssembly.GetTypes()
-				.Where(t => 
-					t.IsClass && 
-					typeof(ILevenshteinDistanceCalculator).IsAssignableFrom(t) && 
+				.Where(t =>
+					t.IsClass &&
+					typeof(ILevenshteinDistanceCalculator).IsAssignableFrom(t) &&
 					t != typeof(LevenshteinDistanceBaseline) &&
+					t != typeof(LevenshteinDistanceDebugger) &&
 					t != typeof(CopyMe)
 				)
 				.ToArray();
 
 			Implementations = engineTypes.Select(t => Activator.CreateInstance(t) as ILevenshteinDistanceCalculator).ToArray();
+			//Implementations = new[] { new Implementations.Frontends.MultiLineSubsectionFrontend() };
 		}
 
 		private void WriteTestRunning(string implementation)
@@ -65,11 +67,12 @@ namespace LevenshteinDistanceBenchmarking.Validation
 			Console.ForegroundColor = ConsoleColor.DarkCyan;
 			Console.Write("Initialising Test Data... ");
 			InitialiseTestData();
-			Console.WriteLine("Done!");
-			Console.ResetColor();
 
 			var baseline = new LevenshteinDistanceBaseline();
 			var baselineResults = GetTestResults(baseline);
+
+			Console.WriteLine("Done!");
+			Console.ResetColor();
 
 			var stopwatch = new Stopwatch();
 
@@ -154,6 +157,15 @@ Proin lacinia arcu non blandit mattis."
 			ValidationData.Add(new Tuple<string, string>(
 				Utilities.ReadTestData("MultilineLipsum1a.txt"),
 				Utilities.ReadTestData("MultilineLipsum1b.txt")
+			));
+
+			ValidationData.Add(new Tuple<string, string>(
+				Utilities.ReadTestData("MultilineLipsum2a.txt"),
+				Utilities.ReadTestData("MultilineLipsum2b.txt")
+			));
+			ValidationData.Add(new Tuple<string, string>(
+				Utilities.ReadTestData("TestHtml1a.html"),
+				Utilities.ReadTestData("TestHtml1b.html")
 			));
 
 			//Extra long, single line strings
