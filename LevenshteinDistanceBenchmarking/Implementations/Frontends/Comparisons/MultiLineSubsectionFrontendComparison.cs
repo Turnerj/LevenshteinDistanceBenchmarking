@@ -135,21 +135,22 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends.Comparisons
 
 			ArrayPool<int>.Shared.Return(previousRow);
 
-			var trackedOperations = new Stack<EditOperation>(sourceLines.Length + targetLines.Length);
+			var trackedOperations = new Span<EditOperation>(new EditOperation[sourceLines.Length + targetLines.Length]);
+			var operationIndex = trackedOperations.Length - 1;
 
-			for (int x = targetLines.Length, y = sourceLines.Length; (x > 0) || (y > 0);)
+			for (int x = targetLines.Length, y = sourceLines.Length; (x > 0) || (y > 0); operationIndex--)
 			{
 				var op = opMatrix[y * columns + x];
 
 				if (op == EditOperationKind.Add)
 				{
 					x -= 1;
-					trackedOperations.Push(new EditOperation(default, targetLines[x], op));
+					trackedOperations[operationIndex] = new EditOperation(default, targetLines[x], op);
 				}
 				else if (op == EditOperationKind.Remove)
 				{
 					y -= 1;
-					trackedOperations.Push(new EditOperation(sourceLines[y], default, op));
+					trackedOperations[operationIndex] = new EditOperation(sourceLines[y], default, op);
 				}
 				else if (op == EditOperationKind.Edit)
 				{
@@ -161,7 +162,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends.Comparisons
 						op = EditOperationKind.None;
 					}
 
-					trackedOperations.Push(new EditOperation(sourceLines[y], targetLines[x], op));
+					trackedOperations[operationIndex] = new EditOperation(sourceLines[y], targetLines[x], op);
 				}
 				else // Start of the matching (EditOperationKind.None)
 					break;
@@ -169,11 +170,11 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends.Comparisons
 
 			ArrayPool<EditOperationKind>.Shared.Return(opMatrix);
 
-			var mergedOps = MergeOperations(trackedOperations.ToArray());
+			var mergedOps = MergeOperations(trackedOperations.Slice(operationIndex + 1));
 			return BuildSubsectionRange(mergedOps.ToArray());
 		}
 
-		private EditOperation[] MergeOperations(EditOperation[] editOperations)
+		private EditOperation[] MergeOperations(ReadOnlySpan<EditOperation> editOperations)
 		{
 			var result = new List<EditOperation>();
 
