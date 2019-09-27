@@ -5,10 +5,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 {
-	public class MultiLineSubsectionFrontend : ILevenshteinDistanceSpanCalculator
+	public class MultiLineSubsectionFrontend : ILevenshteinDistanceMemoryCalculator
 	{
 		private readonly ILevenshteinDistanceSpanCalculator Calculator = new LevenshteinDistanceBaseline();
 
@@ -62,24 +64,45 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
 			}
 		}
 
-		public int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
+		public int CalculateDistance(ReadOnlyMemory<char> source, ReadOnlyMemory<char> target)
 		{
-			var sourceLines = GetSubsectionHashes(source);
-			var targetLines = GetSubsectionHashes(target);
+			var sourceSpan = source.Span;
+			var targetSpan = target.Span;
 
-			var subsectionPairs = GetSubsectionsPairs(sourceLines, targetLines);
-			var joinedPairs = subsectionPairs;
-			var talliedDistance = 0;
-
-			for (var i = 0; i < joinedPairs.Length; i++)
+			var maxSize = Math.Max(source.Length, target.Length);
+			
+			if (maxSize > 512)
 			{
-				var subsectionPair = joinedPairs[i];
-				var sourceLine = source.Slice(subsectionPair.Source.Index, subsectionPair.Source.Length);
-				var targetLine = target.Slice(subsectionPair.Target.Index, subsectionPair.Target.Length);
-				talliedDistance += Calculator.CalculateDistance(sourceLine, targetLine);
-			}
+				var sourceLines = GetSubsectionHashes(sourceSpan);
+				var targetLines = GetSubsectionHashes(targetSpan);
 
-			return talliedDistance;
+				var subsectionPairs = GetSubsectionsPairs(sourceLines, targetLines);
+				var talliedDistance = 0;
+
+				if (subsectionPairs.Length > 1)
+				{
+					Parallel.For(0, subsectionPairs.Length, subsectionIndex =>
+					{
+						var localSourceSpan = source.Span;
+						var localTargetSpan = target.Span;
+						var subsectionPair = subsectionPairs[subsectionIndex];
+						var sourceLine = localSourceSpan.Slice(subsectionPair.Source.Index, subsectionPair.Source.Length);
+						var targetLine = localTargetSpan.Slice(subsectionPair.Target.Index, subsectionPair.Target.Length);
+						var subsectionDistance = Calculator.CalculateDistance(sourceLine, targetLine);
+						Interlocked.Add(ref talliedDistance, subsectionDistance);
+					});
+				}
+				else
+				{
+					talliedDistance = Calculator.CalculateDistance(sourceSpan, targetSpan);
+				}
+
+				return talliedDistance;
+			}
+			else
+			{
+				return Calculator.CalculateDistance(sourceSpan, targetSpan);
+			}
 		}
 
 		private SubsectionPair[] GetSubsectionsPairs(SubsectionInfo[] sourceLines, SubsectionInfo[] targetLines)

@@ -33,14 +33,14 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks.Frontends
 		public void Baseline()
 		{
 			new MultiLineSubsectionFrontend()
-				.CalculateDistance(TestStringA, TestStringB);
+				.CalculateDistance(TestStringA.AsMemory(), TestStringB.AsMemory());
 		}
 
 		[Benchmark]
 		public void Comparison()
 		{
 			new MultiLineSubsectionFrontendComparison()
-				.CalculateDistance(TestStringA, TestStringB);
+				.CalculateDistance(TestStringA.AsMemory(), TestStringB.AsMemory());
 		}
 	}
 }
