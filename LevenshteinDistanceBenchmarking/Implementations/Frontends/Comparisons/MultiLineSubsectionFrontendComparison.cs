@@ -6,9 +6,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace LevenshteinDistanceBenchmarking.Implementations.Frontends
+namespace LevenshteinDistanceBenchmarking.Implementations.Frontends.Comparisons
 {
-	public class MultiLineSubsectionFrontend : ILevenshteinDistanceSpanCalculator
+	public class MultiLineSubsectionFrontendComparison : ILevenshteinDistanceSpanCalculator
 	{
 		private readonly ILevenshteinDistanceSpanCalculator Calculator = new LevenshteinDistanceBaseline();
 
