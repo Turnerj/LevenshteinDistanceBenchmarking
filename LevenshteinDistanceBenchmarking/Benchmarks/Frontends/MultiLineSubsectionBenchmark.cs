@@ -36,7 +36,7 @@ namespace LevenshteinDistanceBenchmarking.Benchmarks.Frontends
 		}
 
 		[Benchmark]
-		public void LineEquality()
+		public void MultiLineSubsection()
 		{
 			new MultiLineSubsectionFrontend()
 				.CalculateDistance(TestStringA.AsMemory(), TestStringB.AsMemory());
