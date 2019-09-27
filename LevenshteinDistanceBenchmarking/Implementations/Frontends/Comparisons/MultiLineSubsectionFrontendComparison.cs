@@ -12,7 +12,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends.Comparisons
 {
 	public class MultiLineSubsectionFrontendComparison : ILevenshteinDistanceMemoryCalculator
 	{
-		private readonly ILevenshteinDistanceSpanCalculator Calculator = new LevenshteinDistanceBaseline();
+		private readonly ILevenshteinDistanceSpanCalculator Calculator = new BestNonParallelCalculator();
 
 		private enum EditOperationKind : byte
 		{
