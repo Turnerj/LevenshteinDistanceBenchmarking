@@ -342,30 +342,31 @@ namespace LevenshteinDistanceBenchmarking.Implementations.Frontends.Comparisons
 		{
 			var result = new List<SubsectionInfo>();
 			var lineStart = 0;
-			var cursor = 0;
+			var lineEndRelativeIndex = text.IndexOf('\n');
 
-			static SubsectionInfo CaptureLineInfo(ReadOnlySpan<char> text, int lineStart, int cursor)
+			static SubsectionInfo CaptureLineInfo(ReadOnlySpan<char> text, int lineStart, int length)
 			{
-				var length = cursor - lineStart;
 				var line = text.Slice(lineStart, length);
 				var hash = CreateMD5(line);
 				return new SubsectionInfo(hash, lineStart, length);
 			}
 
-			for (; cursor < text.Length; cursor++)
+			while (lineEndRelativeIndex != -1 && lineStart < text.Length)
 			{
-				if (text[cursor] == '\n')
-				{
-					result.Add(
-						CaptureLineInfo(text, lineStart, cursor + 1)
-					);
-					lineStart = cursor + 1;
-				}
+				result.Add(
+					CaptureLineInfo(text, lineStart, lineEndRelativeIndex + 1)
+				);
+				lineStart = lineStart + lineEndRelativeIndex + 1;
+				lineEndRelativeIndex = text.Slice(lineStart).IndexOf('\n');
 			}
-			
-			result.Add(
-				CaptureLineInfo(text, lineStart, cursor)
-			);
+
+			if (lineStart < text.Length)
+			{
+				var length = text.Length - lineStart;
+				result.Add(
+					CaptureLineInfo(text, lineStart, length)
+				);
+			}
 
 			return result.ToArray();
 		}
