@@ -288,12 +288,9 @@ Frontends optimise the comparison, applying various shortcuts and other performa
 |         Baseline | aaaaa(...)aaaaa [100] | aaaaa(...)aaaaa [100] | 37,003.01 ns | 685.6607 ns | 641.3675 ns | 36,733.06 ns | 37,895.18 ns | 1.000 |    0.00 | 14.2212 |     - |     - |   44664 B |
 | ShortcutFrontend | aaaaa(...)aaaaa [100] | aaaaa(...)aaaaa [100] |    203.49 ns |   3.8548 ns |   3.6058 ns |    205.49 ns |    207.00 ns | 0.006 |    0.00 |  0.0918 |     - |     - |     288 B |
 
-### Line Equality Benchmark
+### Multi-line Subsection Benchmark
 
-Line equality is a particular frontend optimisation where subsections blocks can be individually processed through a calculator. This is achieved by performing a basic line-hash based Levenshtein calculation, taking only continuous regions of difference to create a subsection.
-
-The end result eliminates lines (that are equal between the source and target) between any number of lines that are different.
-
+Multi-line Subsection is a particular frontend optimisation where subsections can be individually processed through a calculator. This is achieved by performing a basic line-hash based Levenshtein calculation, taking only continuous regions of difference to create a subsection.
 
 |       Method |            TestStringA |            TestStringB |            Mean |          Error |         StdDev |          Median |             Max | Ratio | RatioSD |     Gen 0 |     Gen 1 |     Gen 2 |  Allocated |
 |------------- |----------------------- |----------------------- |----------------:|---------------:|---------------:|----------------:|----------------:|------:|--------:|----------:|----------:|----------:|-----------:|
@@ -323,3 +320,10 @@ The end result eliminates lines (that are equal between the source and target) b
 |              |                        |                        |                 |                |                |                 |                 |       |         |           |           |           |            |
 |     Baseline |  aaaaa(...)aaaaa [100] |  aaaaa(...)aaaaa [100] |     43,362.2 ns |     225.415 ns |     199.825 ns |     43,394.2 ns |     43,725.8 ns |  1.00 |    0.00 |   14.2212 |         - |         - |    44664 B |
 | LineEquality |  aaaaa(...)aaaaa [100] |  aaaaa(...)aaaaa [100] |     47,130.9 ns |     301.743 ns |     282.251 ns |     47,124.7 ns |     47,609.4 ns |  1.09 |    0.01 |   14.7095 |         - |         - |    46320 B |
+
+This is magnified on extremely large comparisons (130k characters) where the subsections can be processed individually.
+
+|              Method |     Mean |    Error |   StdDev |       Max | Ratio | Gen 0 | Gen 1 | Gen 2 | Allocated |
+|-------------------- |---------:|---------:|---------:|----------:|------:|------:|------:|------:|----------:|
+|     BestNonParallel | 99.863 s | 0.6942 s | 0.6493 s | 100.846 s |  1.00 |     - |     - |     - |      24 B |
+| MultiLineSubsection |  1.019 s | 0.0201 s | 0.0215 s |   1.056 s |  0.01 |     - |     - |     - | 4292512 B |
