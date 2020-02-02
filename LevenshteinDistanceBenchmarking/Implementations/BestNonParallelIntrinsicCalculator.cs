@@ -8,7 +8,7 @@ using System.Text;
 
 namespace LevenshteinDistanceBenchmarking.Implementations
 {
-	class BestNonParallelIntrinsicCalculator : ILevenshteinDistanceSpanCalculator
+	public class BestNonParallelIntrinsicCalculator : ILevenshteinDistanceSpanCalculator
 	{
 		public unsafe int CalculateDistance(ReadOnlySpan<char> source, ReadOnlySpan<char> target)
 		{
@@ -16,71 +16,142 @@ namespace LevenshteinDistanceBenchmarking.Implementations
 			var targetLength = target.Length;
 			var columns = targetLength + 1;
 
-			var rentedPool = ArrayPool<int>.Shared.Rent(2 * columns);
-			var costMatrix = new Span<int>(rentedPool);
+			var vectorOffset = Vector256<int>.Count;
+			var vectorOffsetTargetLength = targetLength - vectorOffset;
+
+			var arrayPool = ArrayPool<int>.Shared;
+			var previousRow = arrayPool.Rent(columns);
 
 			for (var i = 1; i <= targetLength; ++i)
 			{
-				costMatrix[i] = i;
+				previousRow[i] = i;
 			}
 
-			costMatrix[0] = 0;
-			var allOnesVectors = Vector256.Create(1);
-
-			var rowComparison = ArrayPool<ushort>.Shared.Rent(target.Length);
+			previousRow[0] = 0;
 
 			for (var i = 1; i <= sourceLength; ++i)
 			{
-				var currentRow = costMatrix.Slice((i & 1) * columns);
-				currentRow[0] = i;
+				var previousDiagonal = previousRow[0];
+				var previousColumn = previousRow[0]++;
 
-				var previousRow = costMatrix.Slice(((i - 1) & 1) * columns);
+				var sourcePrevChar = source[i - 1];
+				var sourcePrevCharVector = Vector256.Create(sourcePrevChar);
 
-				fixed (int* prevRowPtr = previousRow)
-				fixed (ushort* rowComparisonPtr = rowComparison)
+				var columnIndex = 1;
+
+				//Intrinsic Loop
 				fixed (char* targetPtr = target)
 				{
 					var ushortTargetPtr = (ushort*)targetPtr;
-
-					var sourceChar = (ushort)source[i - 1];
-					var sourceCharVector = Vector128.Create(sourceChar);
-
 					var targetIndex = 0;
+					int insertOrDelete;
+					int edit;
 
-					for (; targetIndex + Vector128<ushort>.Count < target.Length; targetIndex += Vector128<ushort>.Count)
+					for (; columnIndex <= vectorOffsetTargetLength; targetIndex += vectorOffset)
 					{
-						var targetVector = Sse2.LoadVector128(ushortTargetPtr + targetIndex);
-						var vectorCompare = Sse2.CompareEqual(sourceCharVector, targetVector);
-						Sse2.Store(rowComparisonPtr + targetIndex, vectorCompare);
+						var targetCharVector = Avx.LoadVector256(ushortTargetPtr + targetIndex);
+						var charEqualityVector = Avx2.CompareEqual(sourcePrevCharVector, targetCharVector);
 
-						//Vector256<int>.Count == Vector128<ushort>.Count: This is why this can be in the same loop
-						var columnsCovered = Avx.LoadVector256(prevRowPtr + targetIndex);
-						var addedColumns = Avx2.Add(columnsCovered, allOnesVectors);
-						Avx.Store(prevRowPtr + targetIndex, addedColumns);
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(0) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(1) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(2) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(3) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(4) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(5) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(6) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(7) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
 					}
-
-					for (; targetIndex < target.Length; targetIndex++)
-					{
-						rowComparison[targetIndex] = sourceChar == target[targetIndex] ? ushort.MaxValue : ushort.MinValue;
-						previousRow[targetIndex]++;
-					}
-
-					previousRow[targetIndex + 1]++;
 				}
 
-				for (var j = 1; j <= targetLength; ++j)
+				//Non-intrinsic Loop
+				for (; columnIndex <= targetLength; columnIndex += 2)
 				{
-					var insert = currentRow[j - 1] + 1;
-					var delete = previousRow[j];
-					var edit = previousRow[j - 1] - (rowComparison[j - 1] & 1);
+					var insertOrDelete1 = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+					var edit1 = previousDiagonal + (sourcePrevChar == target[columnIndex - 1] ? 0 : 1);
 
-					currentRow[j] = Math.Min(Math.Min(insert, delete), edit);
+					previousColumn = Math.Min(insertOrDelete1, edit1);
+					previousDiagonal = previousRow[columnIndex];
+					previousRow[columnIndex] = previousColumn;
+
+					if (columnIndex == target.Length)
+					{
+						break;
+					}
+
+					var insertOrDelete2 = Math.Min(previousColumn, previousRow[columnIndex + 1]) + 1;
+					var edit2 = previousDiagonal + (sourcePrevChar == target[columnIndex] ? 0 : 1);
+
+					previousColumn = Math.Min(insertOrDelete2, edit2);
+					previousDiagonal = previousRow[columnIndex + 1];
+					previousRow[columnIndex + 1] = previousColumn;
 				}
 			}
 
-			var result = costMatrix[(sourceLength & 1) * columns + targetLength];
-			ArrayPool<int>.Shared.Return(rentedPool);
-			ArrayPool<ushort>.Shared.Return(rowComparison);
+			var result = previousRow[targetLength];
+			arrayPool.Return(previousRow);
 			return result;
 		}
 	}
