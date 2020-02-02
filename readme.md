@@ -38,7 +38,7 @@ Misc: LocalStringLength + "LocalRowData" (from Single Row implementation) + 2x U
 
 Data Structure: ArrayPool-based Single Row
 
-Misc: LocalStringLength + "LocalRowData" (from Single Row implementation) + 2x Unroll + Intrinsic Calls (w. 8x Unroll)
+Misc: LocalStringLength + "LocalRowData" (from Single Row implementation) + 2x Unroll + Intrinsic Calls (w. 16x Unroll)
 
 #### BestParallel
 
@@ -46,22 +46,22 @@ Data Structure: ArrayPool Dense Matrix-based Two Row (Bitwise switching)
 
 Misc: LocalStringLength + LocalRowData + 2x Unroll
 
-|                   Method | NumberOfCharacters |             Mean |             Error |            StdDev |              Max | Ratio | RatioSD |      Gen 0 |      Gen 1 |     Gen 2 |   Allocated |
-|------------------------- |------------------- |-----------------:|------------------:|------------------:|-----------------:|------:|--------:|-----------:|-----------:|----------:|------------:|
-|                 Baseline |                  8 |         576.1 ns |         4.2696 ns |         3.9938 ns |         584.8 ns |  1.00 |    0.00 |     0.2775 |          - |         - |       872 B |
-|          BestNonParallel |                  8 |         212.0 ns |         0.5307 ns |         0.4705 ns |         212.8 ns |  0.37 |    0.00 |     0.0076 |          - |         - |        24 B |
-| BestNonParallelIntrinsic |                  8 |         231.4 ns |         1.0884 ns |         1.0181 ns |         233.3 ns |  0.40 |    0.00 |     0.0076 |          - |         - |        24 B |
-|             BestParallel |                  8 |       7,560.5 ns |       138.2660 ns |       115.4583 ns |       7,817.9 ns | 13.12 |    0.23 |     0.5646 |          - |         - |      1784 B |
-|                          |                    |                  |                   |                   |                  |       |         |            |            |           |             |
-|                 Baseline |                512 |   1,283,015.6 ns |     6,198.4526 ns |     5,494.7667 ns |   1,288,753.3 ns |  1.00 |    0.00 |   183.5938 |    91.7969 |         - |   1071368 B |
-|          BestNonParallel |                512 |     588,340.2 ns |     3,979.9444 ns |     3,722.8424 ns |     595,034.9 ns |  0.46 |    0.00 |          - |          - |         - |        24 B |
-| BestNonParallelIntrinsic |                512 |     474,539.8 ns |     3,076.7258 ns |     2,877.9712 ns |     479,544.3 ns |  0.37 |    0.00 |          - |          - |         - |        24 B |
-|             BestParallel |                512 |     579,425.1 ns |    14,433.0686 ns |    39,266.2277 ns |     705,721.2 ns |  0.44 |    0.02 |     0.9766 |          - |         - |      2680 B |
-|                          |                    |                  |                   |                   |                  |       |         |            |            |           |             |
-|                 Baseline |               8192 | 546,923,933.3 ns | 3,554,370.2038 ns | 3,324,760.0940 ns | 551,773,800.0 ns |  1.00 |    0.00 | 46000.0000 | 24000.0000 | 4000.0000 | 268796168 B |
-|          BestNonParallel |               8192 | 151,410,031.7 ns |   974,920.6702 ns |   911,941.3998 ns | 152,906,275.0 ns |  0.28 |    0.00 |          - |          - |         - |        24 B |
-| BestNonParallelIntrinsic |               8192 | 116,301,925.3 ns | 1,017,672.2678 ns |   951,931.2707 ns | 117,726,620.0 ns |  0.21 |    0.00 |          - |          - |         - |        24 B |
-|             BestParallel |               8192 |  56,562,767.4 ns | 1,049,259.4478 ns |   981,477.9385 ns |  58,369,033.3 ns |  0.10 |    0.00 |          - |          - |         - |      2680 B |
+|                   Method | NumberOfCharacters |             Mean |            Error |           StdDev |              Max | Ratio | RatioSD |      Gen 0 |      Gen 1 |     Gen 2 |   Allocated |
+|------------------------- |------------------- |-----------------:|-----------------:|-----------------:|-----------------:|------:|--------:|-----------:|-----------:|----------:|------------:|
+|                 Baseline |                  8 |         578.3 ns |         5.483 ns |         5.129 ns |         586.4 ns |  1.00 |    0.00 |     0.2775 |          - |         - |       872 B |
+|          BestNonParallel |                  8 |         212.6 ns |         1.864 ns |         1.556 ns |         214.9 ns |  0.37 |    0.00 |     0.0076 |          - |         - |        24 B |
+| BestNonParallelIntrinsic |                  8 |         220.6 ns |         2.263 ns |         2.006 ns |         224.0 ns |  0.38 |    0.00 |     0.0076 |          - |         - |        24 B |
+|             BestParallel |                  8 |       7,517.3 ns |       146.699 ns |       190.750 ns |       7,990.0 ns | 13.04 |    0.31 |     0.5646 |          - |         - |      1784 B |
+|                          |                    |                  |                  |                  |                  |       |         |            |            |           |             |
+|                 Baseline |                512 |   1,306,508.2 ns |    13,923.476 ns |    13,024.028 ns |   1,332,822.9 ns |  1.00 |    0.00 |   183.5938 |    91.7969 |         - |   1071368 B |
+|          BestNonParallel |                512 |     607,976.3 ns |     4,242.182 ns |     3,968.140 ns |     618,192.4 ns |  0.47 |    0.01 |          - |          - |         - |        24 B |
+| BestNonParallelIntrinsic |                512 |     472,725.9 ns |     3,367.500 ns |     2,985.201 ns |     477,941.3 ns |  0.36 |    0.00 |          - |          - |         - |        24 B |
+|             BestParallel |                512 |     506,265.1 ns |    10,138.807 ns |    22,884.976 ns |     567,851.5 ns |  0.39 |    0.02 |          - |          - |         - |      2680 B |
+|                          |                    |                  |                  |                  |                  |       |         |            |            |           |             |
+|                 Baseline |               8192 | 545,761,400.0 ns | 3,123,743.835 ns | 2,921,951.921 ns | 550,732,800.0 ns |  1.00 |    0.00 | 46000.0000 | 24000.0000 | 4000.0000 | 268796168 B |
+|          BestNonParallel |               8192 | 152,496,581.7 ns |   727,440.202 ns |   680,448.017 ns | 153,858,475.0 ns |  0.28 |    0.00 |          - |          - |         - |        24 B |
+| BestNonParallelIntrinsic |               8192 | 115,452,953.3 ns |   574,014.866 ns |   536,933.862 ns | 116,693,220.0 ns |  0.21 |    0.00 |          - |          - |         - |        24 B |
+|             BestParallel |               8192 |  59,263,794.0 ns |   609,791.522 ns |   509,203.538 ns |  60,174,711.1 ns |  0.11 |    0.00 |          - |          - |         - |      2680 B |
 
 ### Data Structure Benchmarks
 

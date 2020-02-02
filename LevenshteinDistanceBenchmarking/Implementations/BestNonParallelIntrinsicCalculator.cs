@@ -16,7 +16,7 @@ namespace LevenshteinDistanceBenchmarking.Implementations
 			var targetLength = target.Length;
 			var columns = targetLength + 1;
 
-			var vectorOffset = Vector256<int>.Count;
+			var vectorOffset = Vector256<ushort>.Count;
 			var vectorOffsetTargetLength = targetLength - vectorOffset;
 
 			var arrayPool = ArrayPool<int>.Shared;
@@ -117,6 +117,78 @@ namespace LevenshteinDistanceBenchmarking.Implementations
 
 						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
 						edit = previousDiagonal + (~charEqualityVector.GetElement(7) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(8) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(9) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(10) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(11) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(12) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(13) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(14) & 1);
+
+						previousColumn = Math.Min(insertOrDelete, edit);
+						previousDiagonal = previousRow[columnIndex];
+						previousRow[columnIndex] = previousColumn;
+
+						columnIndex++;
+
+						insertOrDelete = Math.Min(previousColumn, previousRow[columnIndex]) + 1;
+						edit = previousDiagonal + (~charEqualityVector.GetElement(15) & 1);
 
 						previousColumn = Math.Min(insertOrDelete, edit);
 						previousDiagonal = previousRow[columnIndex];
