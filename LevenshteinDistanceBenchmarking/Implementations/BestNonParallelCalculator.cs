@@ -33,11 +33,20 @@ namespace LevenshteinDistanceBenchmarking.Implementations
 
 				for (var j = 1; j <= targetLength; j += 2)
 				{
-					var insertOrDelete1 = Math.Min(previousColumn, previousRow[j]) + 1;
-					var edit1 = previousDiagonal + (sourcePrevChar == target[j - 1] ? 0 : 1);
+					var deleteCost = previousRow[j];
 
-					previousColumn = Math.Min(insertOrDelete1, edit1);
-					previousDiagonal = previousRow[j];
+					if (sourcePrevChar == target[j - 1])
+					{
+						previousColumn = previousDiagonal;
+					}
+					else
+					{
+						var insertOrDelete = Math.Min(previousColumn, deleteCost);
+						var edit = previousDiagonal;
+						previousColumn = Math.Min(insertOrDelete, edit) + 1;
+					}
+
+					previousDiagonal = deleteCost;
 					previousRow[j] = previousColumn;
 
 					if (j == target.Length)
@@ -45,11 +54,20 @@ namespace LevenshteinDistanceBenchmarking.Implementations
 						break;
 					}
 
-					var insertOrDelete2 = Math.Min(previousColumn, previousRow[j + 1]) + 1;
-					var edit2 = previousDiagonal + (sourcePrevChar == target[j] ? 0 : 1);
+					deleteCost = previousRow[j + 1];
 
-					previousColumn = Math.Min(insertOrDelete2, edit2);
-					previousDiagonal = previousRow[j + 1];
+					if (sourcePrevChar == target[j])
+					{
+						previousColumn = previousDiagonal;
+					}
+					else
+					{
+						var insertOrDelete = Math.Min(previousColumn, deleteCost);
+						var edit = previousDiagonal;
+						previousColumn = Math.Min(insertOrDelete, edit) + 1;
+					}
+
+					previousDiagonal = deleteCost;
 					previousRow[j + 1] = previousColumn;
 				}
 			}
